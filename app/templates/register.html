@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="/api/user/register" method="post">
+    <div>
+        <label for="username">Username</label>
+        <input type="text" name="username">
+    </div>
+    <div>
+        <label for="password">Password</label>
+        <input type="password" name="password">
+    </div>
+    <div>
+        <label for="birthday">Birthday</label>
+        <input type="date" id="birthday" name="birthday">
+    </div>
+    <button type="submit">Register</button>
+</form>
+{% endblock %}

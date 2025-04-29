@@ -14,13 +14,16 @@ def create_app() -> flask.Flask:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
     db.init_app(app)
 
+    from . import user
     app.register_blueprint(api)
+    app.register_blueprint(user.bp)
 
     with app.app_context():
         db.create_all()
 
     @app.route("/", endpoint="/")
+    @user.route_to_login_if_required
     def __index():
-        return "Hello World"
+        return flask.render_template("index.html")
 
     return app

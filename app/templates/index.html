@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+    Hello {{g.user.name}} !!
+</div>
+<form action="/api/user/logout" method="post">
+    <button type="submit">Log Out</button>
+</form>
+{% endblock %}
