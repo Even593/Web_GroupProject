@@ -1,0 +1,19 @@
+[project]
+name = "app"
+version = "1.0.0"
+description = "Fitness and weight tracker."
+dependencies = [
+    "flask",
+    "flask-sqlalchemy"
+]
+
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
+reportUnusedFunction = false
+executionEnvironments = [
+    { root = "app" }
+]
