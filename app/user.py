@@ -1,4 +1,3 @@
-from . import api
 from . import db
 
 import re
@@ -13,7 +12,8 @@ import flask.typing
 import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
 
-bp = flask.Blueprint("user", __name__, url_prefix="/user")
+bp_view = flask.Blueprint("user", __name__, url_prefix="/user")
+bp_api = flask.Blueprint("user", __name__, url_prefix="/user")
 
 class Gender(enum.IntEnum):
     UNKNOWN = 0
@@ -36,7 +36,7 @@ def route_to_login_if_required(view: flask.typing.RouteCallable):
 
     return typing.cast(flask.typing.RouteCallable, wrapped_view)
 
-@bp.before_app_request
+@bp_view.before_app_request
 def _load_logged_in_user():
     user_id = flask.session.get("user_id")
     if user_id is None:
@@ -44,11 +44,11 @@ def _load_logged_in_user():
     else:
         flask.g.user = db.db.session.query(Account).filter(Account._id == user_id).scalar()
 
-@bp.get("/login", endpoint="login")
+@bp_view.get("/login", endpoint="login")
 def _login():
     return flask.render_template("login.html")
 
-@bp.get("/register", endpoint="register")
+@bp_view.get("/register", endpoint="register")
 def _register():
     return flask.render_template("register.html")
 
@@ -60,8 +60,8 @@ def __parse_date(s: str) -> datetime.date:
         return datetime.date(year, month, day)
     return datetime.datetime.now().date()
 
-@api.post("/user/register")
-def _api_register():
+@bp_api.post("/register")
+def _bp_api_register():
     user = db.db.session.scalar(
         sa.insert(Account).returning(Account).values(
             name=flask.request.form["username"],
@@ -75,8 +75,8 @@ def _api_register():
     #TODO(junyu): error message
     return flask.redirect(flask.url_for("user.login"))
 
-@api.post("/user/login")
-def _api_login():
+@bp_api.post("/login")
+def _bp_api_login():
     user = db.db.session.query(Account).filter(
         Account.name == flask.request.form["username"],
         Account.password == flask.request.form["password"],
@@ -91,8 +91,8 @@ def _api_login():
     else:
         return "Failed"
 
-@api.post("/user/logout")
-def _api_logout():
+@bp_api.post("/logout")
+def _bp_api_logout():
     flask.g.user = None
     flask.session.clear()
     return flask.redirect(flask.url_for("/"))
