@@ -1,17 +1,17 @@
 import flask
 
-api = flask.Blueprint("api", __name__, url_prefix="/api")
-
 def create_app() -> flask.Flask:
     from . import db
+    api = flask.Blueprint("api", __name__, url_prefix="/api")
     app = flask.Flask(__name__)
     app.config["SECRET_KEY"] = "dev"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
     db.db.init_app(app)
 
     from . import user
+    api.register_blueprint(user.bp_api)
+    app.register_blueprint(user.bp_view)
     app.register_blueprint(api)
-    app.register_blueprint(user.bp)
 
     with app.app_context():
         db.db.create_all()
