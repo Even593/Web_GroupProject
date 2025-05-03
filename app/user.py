@@ -1,4 +1,5 @@
-from . import api, db
+from . import api
+from . import db
 
 import re
 import enum
@@ -19,8 +20,7 @@ class Gender(enum.IntEnum):
     MALE = 1
     FEMALE = 2
 
-class Account(db.Model):
-    _id: sa_orm.Mapped[int] = sa_orm.mapped_column("id", primary_key=True)
+class Account(db.IdMixin, db.db.Model):
     name: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(30), unique=True)
     password: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(30))
     gender: sa_orm.Mapped[Gender] = sa_orm.mapped_column(sa.Enum(Gender))
@@ -42,7 +42,7 @@ def _load_logged_in_user():
     if user_id is None:
         flask.g.user = None
     else:
-        flask.g.user = db.session.query(Account).filter(Account._id == user_id).scalar()
+        flask.g.user = db.db.session.query(Account).filter(Account._id == user_id).scalar()
 
 @bp.get("/login", endpoint="login")
 def _login():
@@ -62,7 +62,7 @@ def __parse_date(s: str) -> datetime.date:
 
 @api.post("/user/register")
 def _api_register():
-    user = db.session.scalar(
+    user = db.db.session.scalar(
         sa.insert(Account).returning(Account).values(
             name=flask.request.form["username"],
             password=flask.request.form["password"],
@@ -70,14 +70,14 @@ def _api_register():
             birthdate=__parse_date(flask.request.form["birthday"]),
         )
     )
-    db.session.commit()
+    db.db.session.commit()
 
     #TODO(junyu): error message
     return flask.redirect(flask.url_for("user.login"))
 
 @api.post("/user/login")
 def _api_login():
-    user = db.session.query(Account).filter(
+    user = db.db.session.query(Account).filter(
         Account.name == flask.request.form["username"],
         Account.password == flask.request.form["password"],
     ).scalar()
