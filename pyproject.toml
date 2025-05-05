@@ -13,6 +13,7 @@ build-backend = "flit_core.buildapi"
 
 [tool.basedpyright]
 typeCheckingMode = "standard"
+reportUnreachable = false
 reportUnusedFunction = false
 executionEnvironments = [
     { root = "app" }
