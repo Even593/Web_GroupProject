@@ -20,7 +20,7 @@ class Gender(enum.IntEnum):
     MALE = 1
     FEMALE = 2
 
-class Account(db.IdMixin, db.db.Model):
+class Account(db.IdMixin, db.BaseModel):
     name: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(30), unique=True)
     password: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(30))
     gender: sa_orm.Mapped[Gender] = sa_orm.mapped_column(sa.Enum(Gender))
