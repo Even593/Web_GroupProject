@@ -1,4 +1,5 @@
 from . import db
+from . import util
 
 import re
 import enum
@@ -12,8 +13,7 @@ import flask.typing
 import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
 
-bp_view = flask.Blueprint("user", __name__, url_prefix="/user")
-bp_api = flask.Blueprint("user", __name__, url_prefix="/user")
+bp_view, bp_api = util.make_module_blueprints("user")
 
 class Gender(enum.IntEnum):
     UNKNOWN = 0
