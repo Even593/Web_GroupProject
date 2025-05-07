@@ -1,19 +1,51 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form action="/api/user/register" method="post">
-    <div>
-        <label for="username">Username</label>
-        <input type="text" name="username">
+<section class="py-5">
+  <div class="container">
+    <h2 class="text-center mb-5 fw-bold">Create Your Account</h2>
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card p-4 shadow-sm">
+          <div class="mb-3">
+            <label class="form-label">User Name</label>
+            <input id="register-username" type="text" class="form-control" placeholder="Enter your user name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input id="register-password" type="password" class="form-control" placeholder="Enter your password" required>
+          </div>
+          <div class="d-grid gap-2">
+            <button id="register-submit" class="btn btn-success btn-lg">Sign Up</button>
+          </div>
+          <p class="text-center mt-3">
+            Already have an account? <a href="/login" class="text-success">Login</a>
+          </p>
+        </div>
+      </div>
     </div>
-    <div>
-        <label for="password">Password</label>
-        <input type="password" name="password">
-    </div>
-    <div>
-        <label for="birthday">Birthday</label>
-        <input type="date" id="birthday" name="birthday">
-    </div>
-    <button type="submit">Register</button>
-</form>
+  </div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+$(function() {
+    $("#register-submit").on("click", function() {
+        $.ajax({
+            type: "POST",
+            url: "/api/user/register",
+            data: JSON.stringify({
+                username: $("#register-username").val(),
+                password: $("#register-password").val(),
+            }),
+            dataType: "json",
+            contentType: "application/json",
+        }).done(function(data) {
+            if (data.succeed)
+                window.location.replace("/user/login");
+        });
+    });
+});
+</script>
 {% endblock %}

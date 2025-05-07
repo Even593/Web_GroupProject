@@ -3,6 +3,7 @@ from . import util
 
 import re
 import enum
+import json
 import typing
 import datetime
 import functools
@@ -62,37 +63,46 @@ def __parse_date(s: str) -> datetime.date:
 
 @bp_api.post("/register")
 def _bp_api_register():
-    user = db.db.session.scalar(
-        sa.insert(Account).returning(Account).values(
-            name=flask.request.form["username"],
-            password=flask.request.form["password"],
-            gender=Gender.MALE,
-            birthdate=__parse_date(flask.request.form["birthday"]),
+    succeed = False
+    params = flask.request.get_json(silent=True)
+    if params:
+        db.db.session.execute(
+            sa.insert(Account).returning(Account).values(
+                name=params["username"],
+                password=params["password"],
+                gender=Gender.MALE,
+                birthdate=__parse_date("2025-01-01"),
+            )
         )
-    )
-    db.db.session.commit()
+        db.db.session.commit()
+        succeed = True
 
     #TODO(junyu): error message
-    return flask.redirect(flask.url_for("user.login"))
+    return json.dumps({"succeed": succeed})
 
 @bp_api.post("/login")
 def _bp_api_login():
-    user = db.db.session.query(Account).filter(
-        Account.name == flask.request.form["username"],
-        Account.password == flask.request.form["password"],
-    ).scalar()
+    user = None
+    params = flask.request.get_json(silent=True)
+    if params:
+        name = params.get("username")
+        password = params.get("password")
+        if name and password:
+            user = db.db.session.query(Account).where(
+                Account.name == name,
+                Account.password == password,
+            ).scalar()
 
     if user:
         user = typing.cast(Account, user)
         flask.session.clear()
         flask.session["user_id"] = user._id
         flask.g.user = user
-        return flask.redirect(flask.url_for("/"))
-    else:
-        return "Failed"
+
+    return json.dumps({"succeed": (user is not None)})
 
 @bp_api.post("/logout")
 def _bp_api_logout():
     flask.g.user = None
     flask.session.clear()
-    return flask.redirect(flask.url_for("/"))
+    return json.dumps({"succeed": True})
