@@ -13,3 +13,9 @@ if typing.TYPE_CHECKING:
 else:
     BaseModel = db.Model
 
+
+class WeightRecord(db.Model):
+    user_id = db.Column(db.Integer, nullable=False)
+    record_date = db.Column(db.Date, nullable=False)
+    weight_kg = db.Column(db.Float, nullable=False)
+

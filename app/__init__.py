@@ -9,8 +9,11 @@ def create_app() -> flask.Flask:
     db.db.init_app(app)
 
     from . import user
+    from . import weight
     api.register_blueprint(user.bp_api)
     app.register_blueprint(user.bp_view)
+    api.register_blueprint(weight.bp_api)
+    app.register_blueprint(weight.bp_view)
     app.register_blueprint(api)
 
     with app.app_context():

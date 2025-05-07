@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Weight Tracker{% endblock %}
+
+{% block content %}
+    <h1>Weight Tracker</h1>
+    <form method="POST" action="/weight/submit">
+        {{ form.hidden_tag() }}
+        {{ form.record_date.label }} {{ form.record_date() }}<br>
+        {{ form.weight_kg.label }} {{ form.weight_kg() }}<br>
+        {{ form.submit() }}
+    </form>
+<a href="{{ export_url }}">Export to PDF</a>
+    <h2>History</h2>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Weight (kg)</th>
+        </tr>
+        {% for record in records %}
+        <tr>
+            <td>{{ record.record_date }}</td>
+            <td>{{ record.weight_kg }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
