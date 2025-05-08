@@ -65,20 +65,4 @@ def get_trend(days=7):
 
 @bp_view.get("/")
 def analytics_dashboard():
-    summary = get_summary()
-    trend_data = get_trend()
-    return flask.render_template("analytics.html",
-        total_distance=summary["total_distance"],
-        total_duration=summary["total_duration"],
-        total_calories=summary["total_calories"],
-        pb_count=1 if summary["best_5k"] != "—" else 0,
-        load_level="Moderate",
-        recovery_tip="1 day light activity recommended",
-        load_score=int(sum(trend_data.values())),
-        top_activity="Running",
-        most_active_day="Wednesday",
-        average_rpe=6.5,
-        best_5k=summary["best_5k"],
-        longest=summary["longest"],
-        max_cal=summary["max_cal"]
-    )
+    return flask.render_template("analytics.html")
