@@ -1,50 +1,34 @@
+from . import db
 from . import util
+from . import user
 
-import os
-import csv
-from flask import request, redirect, url_for, render_template
-from werkzeug.utils import secure_filename
-from datetime import datetime
+import flask
+import datetime
+
+import sqlalchemy as sa
+import sqlalchemy.orm as sa_orm
 
 bp_view, bp_api = util.make_module_blueprints("workout")
 
-# csv file path
-DATA_FILE = os.path.join("app", "user_data", "activity_log.csv")
-UPLOAD_FOLDER = os.path.join("app", "static", "uploads")
-os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+class WorkoutRecord(db.UidMixin, db.BaseModel):
+    date: sa_orm.Mapped[datetime.date] = sa_orm.mapped_column(sa.Date)
+    notes: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.UnicodeText)
+    duration: sa_orm.Mapped[int] = sa_orm.mapped_column(sa.Integer)
+    calories: sa_orm.Mapped[int] = sa_orm.mapped_column(sa.Integer)
 
-@bp_view.get("/")
-def activity_page():
-    return render_template("workout.html")
+@user.route_to_login_if_required
+@bp_view.get("/", endpoint="")
+def _view_workout():
+    return flask.render_template("workout.html")
 
-@bp_api.post("/submit")
-def add_activity():
-    data = {
-        "type": request.form.get("type"),
-        "date": request.form.get("date"),
-        "duration": request.form.get("duration"),
-        "distance": request.form.get("distance"),
-        "tags": request.form.get("tags"),
-        "visibility": request.form.get("visibility"),
-        "description": request.form.get("description"),
-        "photo": ""
-    }
+@bp_api.post("/record/insert")
+def _bp_api_workout_insert():
+    return db.handle_api_insert(WorkoutRecord, flask.request)
 
-    # save the uploaded image
-    photo_file = request.files.get("photo")
-    if photo_file and photo_file.filename != "":
-        filename = secure_filename(f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{photo_file.filename}")
-        photo_path = os.path.join(UPLOAD_FOLDER, filename)
-        photo_file.save(photo_path)
-        data["photo"] = f"/static/uploads/{filename}"
+@bp_api.get("/record/query")
+def _bp_api_workout_query():
+    return db.handle_api_query(WorkoutRecord, flask.request)
 
-    # write csv file
-    file_exists = os.path.isfile(DATA_FILE)
-    with open(DATA_FILE, "a", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=data.keys())
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow(data)
-
-    return redirect(url_for("analytics"))
+@bp_api.post("/record/delete")
+def _bp_api_workout_delete():
+    return db.handle_api_delete(WorkoutRecord, flask.request)
