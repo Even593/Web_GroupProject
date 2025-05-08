@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-bold mb-4">Create Workout Record</h2>
+  <div class="card shadow-sm p-4">
+    <form action="/api/user/add_activity" method="post" enctype="multipart/form-data">
+      
+      <!-- Basic Info -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <label for="activityType" class="form-label fw-semibold">Activity Type</label>
+          <select class="form-select" id="activityType" name="type" required>
+            <option disabled selected>Select activity type</option>
+            <optgroup label="Endurance">
+              <option>Running</option>
+              <option>Walking</option>
+              <option>Cycling</option>
+              <option>Hiking</option>
+              <option>Rowing</option>
+              <option>Swimming</option>
+            </optgroup>
+            <optgroup label="Strength / Flexibility">
+              <option>Gym Workout</option>
+              <option>Strength Training</option>
+              <option>Yoga</option>
+              <option>Pilates</option>
+              <option>Martial Arts</option>
+            </optgroup>
+            <optgroup label="Others">
+              <option>Dance</option>
+              <option>Climbing</option>
+              <option>Skating</option>
+              <option>Other</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="date" class="form-label fw-semibold">Date</label>
+          <input type="date" class="form-control" id="date" name="date" required>
+        </div>
+      </div>
+
+      <!-- Duration, Distance, Calories -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <label for="duration" class="form-label fw-semibold">Duration (minutes)</label>
+          <input type="number" class="form-control" id="duration" name="duration" min="0" required>
+        </div>
+        <div class="col-md-4">
+          <label for="distance" class="form-label fw-semibold">Distance (km)</label>
+          <input type="number" step="0.01" class="form-control" id="distance" name="distance">
+        </div>
+        <div class="col-md-4">
+          <label for="calories" class="form-label fw-semibold">Calories Burned</label>
+          <input type="number" class="form-control" id="calories" name="calories" min="0" step="1">
+        </div>
+      </div>
+
+      <!-- Intensity, RPE, PB -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <label for="intensity" class="form-label fw-semibold">Intensity Level</label>
+          <select class="form-select" id="intensity" name="intensity" required>
+            <option disabled selected>Select intensity</option>
+            <option>Low</option>
+            <option>Moderate</option>
+            <option>High</option>
+            <option>Max Effort</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="rpe" class="form-label fw-semibold">Perceived Exertion (1–10)</label>
+          <input type="number" class="form-control" id="rpe" name="rpe" min="1" max="10">
+        </div>
+        <div class="col-md-4">
+          <label for="pb_flag" class="form-label fw-semibold">Personal Best</label>
+          <div class="form-check mt-2">
+            <input class="form-check-input" type="checkbox" id="pb_flag" name="pb_flag">
+            <label class="form-check-label" for="pb_flag">Mark as Personal Best</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags & Visibility -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <label for="tags" class="form-label fw-semibold">Tags</label>
+          <select class="form-select" id="tags" name="tags">
+            <option disabled selected>Select a tag</option>
+            <option>Morning Workout</option>
+            <option>Evening Cardio</option>
+            <option>Commute</option>
+            <option>Training</option>
+            <option>Recreational</option>
+            <option>Recovery</option>
+            <option>Competition</option>
+            <option>Fun</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold d-block">Visibility</label>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="visibility" id="public" value="public" checked>
+            <label class="form-check-label" for="public">Public</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="visibility" id="private" value="private">
+            <label class="form-check-label" for="private">Private</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="mb-4">
+        <label for="description" class="form-label fw-semibold">Route Notes / Reflections</label>
+        <textarea class="form-control" id="description" name="description" rows="3" placeholder="How did you feel? What stood out?"></textarea>
+      </div>
+
+      <!-- Upload Photo -->
+      <div class="mb-4">
+        <label for="photo" class="form-label fw-semibold">Upload Photo</label>
+        <input type="file" class="form-control" id="photo" name="photo" accept="image/*" onchange="previewImage(event)">
+        <div id="photoPreview" class="mt-2" style="display: none;">
+          <img id="preview" src="#" alt="preview" class="img-fluid rounded shadow" style="max-height: 200px;" />
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="text-end">
+        <button type="submit" class="btn btn-success px-4">Add Activity</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+      const output = document.getElementById('preview');
+      output.src = reader.result;
+      document.getElementById('photoPreview').style.display = 'block';
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  }
+</script>
+{% endblock %}
