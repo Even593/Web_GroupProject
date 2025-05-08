@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-bold mb-4">Activity Analytics Dashboard</h2>
+
+  <!-- Overview Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm p-3">
+        <h6 class="text-muted">Total Distance</h6>
+        <h4 class="fw-bold text-success">{{ total_distance }} km</h4>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm p-3">
+        <h6 class="text-muted">Total Duration</h6>
+        <h4 class="fw-bold text-success">{{ total_duration }}</h4>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm p-3">
+        <h6 class="text-muted">Calories Burned</h6>
+        <h4 class="fw-bold text-success">{{ total_calories }} kcal</h4>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm p-3">
+        <h6 class="text-muted">PB Count</h6>
+        <h4 class="fw-bold text-success">{{ pb_count }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trend Chart -->
+  <div class="card shadow-sm p-4 mb-4">
+    <h5 class="fw-semibold mb-3">Weekly Activity Trend</h5>
+    <img src="{{ url_for('static', filename='charts/duration_trend.png') }}" class="img-fluid">
+  </div>
+
+  <!-- Calories Chart -->
+  <div class="card shadow-sm p-4 mb-4">
+    <h5 class="fw-semibold mb-3">Calories Burned</h5>
+    <img src="{{ url_for('static', filename='charts/calories_trend.png') }}" class="img-fluid">
+  </div>
+
+  <!-- Personal Best Tracker -->
+  <div class="card shadow-sm p-4 mb-4">
+    <h5 class="fw-semibold mb-3">Personal Best Tracker</h5>
+    <img src="{{ url_for('static', filename='charts/pb_tracking.png') }}" class="img-fluid">
+  </div>
+
+  <!-- Recovery Section -->
+  <div class="accordion" id="analysisAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingRecovery">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRecovery" aria-expanded="false" aria-controls="collapseRecovery">
+          Recovery Analysis
+        </button>
+      </h2>
+      <div id="collapseRecovery" class="accordion-collapse collapse" aria-labelledby="headingRecovery" data-bs-parent="#analysisAccordion">
+        <div class="accordion-body">
+          <p><strong>Current Load Level:</strong> {{ load_level }}</p>
+          <p><strong>Recommended:</strong> {{ recovery_tip }}</p>
+          <p><strong>7-Day Load Score:</strong> {{ load_score }}/100</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Summary -->
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingSummary">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSummary" aria-expanded="false" aria-controls="collapseSummary">
+          Activity Summary
+        </button>
+      </h2>
+      <div id="collapseSummary" class="accordion-collapse collapse" aria-labelledby="headingSummary" data-bs-parent="#analysisAccordion">
+        <div class="accordion-body">
+          <ul>
+            <li>Most Frequent Activity: {{ top_activity }}</li>
+            <li>Most Active Day: {{ most_active_day }}</li>
+            <li>Average RPE: {{ average_rpe }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
