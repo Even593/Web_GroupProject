@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import flask
 
 def make_module_blueprints(name: str) -> tuple[flask.Blueprint, flask.Blueprint]:

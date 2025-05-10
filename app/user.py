@@ -82,8 +82,8 @@ def _bp_api_register():
 
 @bp_api.post("/login")
 def _bp_api_login():
-    user = None
-    params = flask.request.get_json(silent=True)
+    user: Account | None = None
+    params: dict[str, typing.Any] = flask.request.get_json(silent=True)
     if params:
         name = params.get("username")
         password = params.get("password")
@@ -94,7 +94,6 @@ def _bp_api_login():
             ).scalar()
 
     if user:
-        user = typing.cast(Account, user)
         flask.session.clear()
         flask.session["user_id"] = user._id
         flask.g.user = user
