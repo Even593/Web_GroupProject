@@ -74,7 +74,7 @@ def _export_pdf():
         pdf.cell(50, 10, str(record.weight_kg), border=1)
         pdf.ln()
 
-    output_dir = os.path.join(os.getcwd(), "share", "pdf files")
+    output_dir = os.path.join(os.getcwd(), "instance", "pdf files")
     os.makedirs(output_dir, exist_ok=True)  # create folder
 
     pdf_path = os.path.join(output_dir, "weight_records.pdf")
@@ -84,3 +84,5 @@ def _export_pdf():
     print(f"PDF saved at: {pdf_path}")
 
     return send_file(pdf_path, as_attachment=True)
+
+

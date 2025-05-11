@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container py-5">
+        <h2 class="mb-4">Weight Analysis</h2>
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h6>Total Records</h6>
+                    <h3 id="wa-count">—</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h6>Average Weight (kg)</h6>
+                    <h3 id="wa-avg">—</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h6>Min Weight (kg)</h6>
+                    <h3 id="wa-min">—</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h6>Max Weight (kg)</h6>
+                    <h3 id="wa-max">—</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-4 mb-4">
+            <h5 class="mb-3">Weight Over Time</h5>
+            <canvas id="wa-chart"></canvas>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+    <script>
+        $(function () {
+            $.getJSON("/weightchart/data").done(function (json) {
+                if (!json.series || !json.series.length) return;
+
+                $("#wa-count").text(json.summary.count);
+                $("#wa-avg").text(json.summary.avg ?? '—');
+                $("#wa-min").text(json.summary.min ?? '—');
+                $("#wa-max").text(json.summary.max ?? '—');
+
+                const labels = json.series.map(p => p[0]);
+                const data =    json.series.map(p => p[1]);
+
+                new Chart(
+                    document.getElementById("wa-chart"),
+                    {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [{
+                                label: 'Weight (kg)',
+                                data,
+                                fill: false,
+                                tension: 0.25
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: { beginAtZero: false }
+                            },
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    }
+                );
+            }).fail(function() {
+                console.error("Failed");
+            });
+        });
+    </script>
+{% endblock %}
