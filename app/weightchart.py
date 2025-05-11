@@ -2,8 +2,6 @@ import datetime
 import flask
 import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
-from . import db
-from . import user
 from . import db, util, user
 from .db import WeightRecord
 
@@ -12,16 +10,13 @@ bp_view.name = "weightchart_view"
 bp_api.name  = "weightchart_api"
 
 
-def read_user_weights(user_id):
-    user_id = flask.g.user._id
-    session = db.db.session
-    qs = session.query(WeightRecord).filter(WeightRecord.user_id == user_id).order_by(WeightRecord.record_date)
-    return [(r.record_date.isoformat(), r.weight_kg) for r in qs.all()]
+# def read_user_weights(user_id):
+#     user_id = flask.g.user._id
+#     session = db.db.session
+#     qs = session.query(WeightRecord).filter(WeightRecord.user_id == user_id).order_by(WeightRecord.record_date)
+#     return [(r.record_date.isoformat(), r.weight_kg) for r in qs.all()]
 
 def summarize_weights(records):
-    """
-    计算总记录数、平均体重、最大最小值
-    """
     weights = [w for _, w in records]
     if not weights:
         return {"count": 0, "avg": None, "min": None, "max": None}
@@ -40,9 +35,14 @@ def view_weight_analysis():
 @bp_api.get("/data")
 def api_weight_analysis_data():
     user_id = flask.g.user._id
-    records = read_user_weights(user_id)
-    summary = summarize_weights(records)
-    return flask.jsonify({
-        "series": records,
-        "summary": summary
-    })
+    session = db.db.session
+    qs = session.query(WeightRecord).filter(WeightRecord.user_id == user_id).order_by(WeightRecord.record_date)
+    records = qs.all()
+    height = 1.75
+    series = []
+    for rec in records:
+        date = rec.record_date.isoformat()
+        weight = rec.weight_kg
+        bmi = round(weight / (height ** 2), 1)
+        series.append([date, weight, bmi])
+    return flask.jsonify({"series": series})

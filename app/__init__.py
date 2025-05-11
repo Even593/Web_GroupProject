@@ -1,5 +1,8 @@
 import flask
 
+from app import leaderboard
+
+
 def create_app() -> flask.Flask:
     from . import db
     api = flask.Blueprint("api", __name__, url_prefix="/api")
@@ -24,6 +27,7 @@ def create_app() -> flask.Flask:
     app.register_blueprint(analytics.bp_view)
     app.register_blueprint(weightchart.bp_api)
     app.register_blueprint(weightchart.bp_view)
+    app.register_blueprint(leaderboard.bp_view)
     app.register_blueprint(api)
     app.register_blueprint(profile.bp_view)
 
