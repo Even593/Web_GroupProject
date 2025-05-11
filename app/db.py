@@ -48,7 +48,7 @@ __TYPE_CONVERSION_OUT = {
     sa.DateTime: lambda d: d.strftime("%Y-%m-%dT%H:%M"),
 }
 
-def __make_response(succeed: bool, ids: typing.Sequence[int] | None, objs: typing.Any | None):
+def __make_response(succeed: bool, ids, objs):
     result = dict()
     result["succeed"] = succeed
     if ids:

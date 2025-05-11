@@ -13,6 +13,7 @@ def create_app() -> flask.Flask:
     from . import workout
     from . import analytics
     from . import profile
+    from . import weightchart
     api.register_blueprint(user.bp_api)
     app.register_blueprint(user.bp_view)
     api.register_blueprint(weight.bp_api)
@@ -21,6 +22,8 @@ def create_app() -> flask.Flask:
     app.register_blueprint(workout.bp_view)
     api.register_blueprint(analytics.bp_api)
     app.register_blueprint(analytics.bp_view)
+    app.register_blueprint(weightchart.bp_api)
+    app.register_blueprint(weightchart.bp_view)
     app.register_blueprint(api)
     app.register_blueprint(profile.bp_view)
 
