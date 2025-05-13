@@ -27,6 +27,12 @@ class WeightRecord(db.Model):
     user_id = db.Column(db.Integer, nullable=False)
     record_date = db.Column(db.Date, nullable=False)
     weight_kg = db.Column(db.Float, nullable=False)
+    
+class SharedWorkout(db.Model):
+    from_user_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
+    to_user_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
+    record_id = db.Column(db.Integer, db.ForeignKey("workout_record.id"), nullable=False)
+    shared_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 __ModelClass = typing.Type[BaseModel]
 
@@ -96,7 +102,7 @@ def handle_api_query(model: __ModelClass, _: flask.Request) -> str:
     # TODO(junyuzhang): handle criteria specifiers
     stmt = sa.select(*column_defs)
     if flask.g.user and issubclass(model, UidMixin):
-        stmt.where(model.uid == typing.cast(user.Account, flask.g.user)._id)
+        stmt = stmt.where(model.uid == typing.cast(user.Account, flask.g.user)._id)
 
     objs = []
     for item in db.session.execute(stmt).yield_per(100):

@@ -73,7 +73,10 @@ $(function() {
           <td>${item.duration} min</td>
           <td>${item.calories} cal</td>
           <td><div class="col-20 text-truncate">${item.notes}</div></td>
-          <td><button class="btn btn-secondary btn-sm""><i class="bi bi-trash"></i></button></td>
+          <td>
+            <button onclick="shareWorkout(${item.id})" class="btn btn-outline-success btn-sm">Share</button>
+            <button class="btn btn-secondary btn-sm""><i class="bi bi-trash"></i></button>
+            </td>
           </tr>`);
 
         const date = new Date(item.date);
@@ -137,5 +140,21 @@ $(function() {
         });
     });
 });
+
+function shareWorkout(record_id) {
+    const toUser = prompt("Enter the username to share with:");
+    if (!toUser) return;
+
+    $.ajax({
+        type: "POST",
+        url: "/api/workout/record/share",
+        contentType: "application/json",
+        data: JSON.stringify({ to_username: toUser, record_id: record_id }),
+        success: function (res) {
+            if (res.succeed) alert("Shared successfully!");
+            else alert("Failed: " + res.error);
+        }
+    });
+}
 </script>
 {% endblock %}

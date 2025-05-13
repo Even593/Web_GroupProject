@@ -17,7 +17,7 @@
     <a class="navbar-brand text-success fw-bold" href="/">FitTrack</a>
     <ul class="navbar-nav ms-auto flex-row align-items-center">
       <li class="nav-item mx-2">
-        <a class="nav-link text-success fw-semibold" href="/">Home</a>
+        <a class="nav-link text-success fw-semibold" href="/profile">Home</a>
       </li>
       {% if g.user %}
       <li class="nav-item mx-2">
@@ -25,6 +25,9 @@
       </li>
       <li class="nav-item mx-2">
         <a class="nav-link text-success fw-semibold" href="/analytics">Analytics</a>
+      </li>
+      <li class="nav-item mx-2">
+        <a class="nav-link text-success fw-semibold" href="/workout/shared">Shared</a>
       </li>
       {% else %}
         {% if request.endpoint != "user.login" %}
