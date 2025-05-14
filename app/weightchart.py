@@ -1,5 +1,5 @@
 import flask
-from . import db, util, account
+from . import db, util
 from .db import WeightRecord
 
 bp_view, bp_api = util.make_module_blueprints("weightchart")
@@ -24,8 +24,8 @@ def summarize_weights(records):
         "max": max(weights)
     }
 
-@account.route_to_login_if_required
 @bp_view.get("/")
+@util.route_check_login
 def view_weight_analysis():
     return flask.render_template("weightchart.html")
 

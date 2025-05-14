@@ -8,7 +8,6 @@ import enum
 import json
 import typing
 import datetime
-import functools
 
 import flask
 import flask.typing
@@ -30,16 +29,6 @@ class Account(db.BaseModel):
     password: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(30))
     gender: sa_orm.Mapped[Gender] = sa_orm.mapped_column(sa.Enum(Gender))
     birthdate: sa_orm.Mapped[datetime.date] = sa_orm.mapped_column(sa.Date)
-
-def route_to_login_if_required(view: flask.typing.RouteCallable):
-
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if not util.get_current_user():
-            return flask.redirect(flask.url_for("user.login"))
-        return view(**kwargs)
-
-    return typing.cast(flask.typing.RouteCallable, wrapped_view)
 
 @bp_view.before_app_request
 def _load_logged_in_user():
