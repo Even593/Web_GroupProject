@@ -46,7 +46,7 @@ def _load_logged_in_user():
     uid = flask.session.get(__SESSION_KEY_UID)
     user = None
     if uid:
-        user = db.db.session.query(Account).filter(Account._id == uid).scalar()
+        user = db.db.session.query(Account).filter(Account.id == uid).scalar()
     util.set_current_user(user)
 
 @bp_view.get("/login", endpoint="login")
@@ -99,7 +99,7 @@ def _bp_api_login():
 
     if user:
         flask.session.clear()
-        flask.session[__SESSION_KEY_UID] = user._id
+        flask.session[__SESSION_KEY_UID] = user.id
         util.set_current_user(user)
 
     return json.dumps({"succeed": (user is not None)})

@@ -13,7 +13,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
 
 class __BaseModel(sa_orm.DeclarativeBase):
-    _id: sa_orm.Mapped[int] = sa_orm.mapped_column("id", primary_key=True)
+    id: sa_orm.Mapped[int] = sa_orm.mapped_column(primary_key=True)
 
 db = flask_sqlalchemy.SQLAlchemy(model_class=__BaseModel)
 
@@ -82,7 +82,7 @@ def handle_api_insert(model: __ModelClass, req: flask.Request) -> str:
     user = util.get_current_user()
     if user and issubclass(model, UidMixin):
         for item in values:
-            item[model.uid.key] = user._id
+            item[model.uid.key] = user.id
 
     # handle implicit type conversions
     for col in model.__table__.columns:
@@ -90,7 +90,7 @@ def handle_api_insert(model: __ModelClass, req: flask.Request) -> str:
         if fn:
             __transform_column_values(values, col.key, fn)
 
-    stmt = sa.insert(model).values(values).returning(model._id)
+    stmt = sa.insert(model).values(values).returning(model.id)
     ids = db.session.scalars(stmt).all()
     db.session.commit()
     return __make_response(True, ids, None)
@@ -107,7 +107,7 @@ def handle_api_query(model: __ModelClass, _: flask.Request) -> str:
     stmt = sa.select(*column_defs)
     user = util.get_current_user()
     if user and issubclass(model, UidMixin):
-        stmt.where(model.uid == user._id)
+        stmt.where(model.uid == user.id)
 
     objs = []
     for item in db.session.execute(stmt).yield_per(100):
@@ -130,6 +130,6 @@ def handle_api_delete(model: __ModelClass, req: flask.Request) -> str:
     if not ids:
         return __make_response(False, None, None)
 
-    db.session.execute(sa.delete(model).where(model._id.in_(ids)))
+    db.session.execute(sa.delete(model).where(model.id.in_(ids)))
     db.session.commit()
     return __make_response(True, None, None)

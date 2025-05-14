@@ -42,7 +42,7 @@ def _bp_api_workout_delete():
 @bp_api.post("/record/share")
 def share_workout():
     data = flask.request.get_json()
-    from_user = flask.g.user._id
+    from_user = flask.g.user.id
     record_id = data.get("record_id")
     to_user_name = data.get("to_username")
 
@@ -53,7 +53,7 @@ def share_workout():
 
     share = db.SharedWorkout(
         from_user_id=from_user,
-        to_user_id=to_user._id,
+        to_user_id=to_user.id,
         record_id=record_id
     )
     db.db.session.add(share)
@@ -62,19 +62,19 @@ def share_workout():
 
 @bp_api.get("/record/shared-with-me")
 def shared_with_me():
-    user_id = flask.g.user._id
+    user_id = flask.g.user.id
 
     # 获取所有别人分享给我的 record_id
     shared_ids = db.db.session.query(db.SharedWorkout.record_id).filter_by(to_user_id=user_id).all()
     record_ids = [sid[0] for sid in shared_ids]
 
     # 查询这些记录，不要再加 uid 筛选了（否则会排除掉别人分享的数据）
-    records = db.db.session.query(WorkoutRecord).filter(WorkoutRecord._id.in_(record_ids)).all()
+    records = db.db.session.query(WorkoutRecord).filter(WorkoutRecord.id.in_(record_ids)).all()
 
     result = []
     for r in records:
         result.append({
-            "id": r._id,
+            "id": r.id,
             "date": r.date.strftime("%Y-%m-%d"),
             "duration": r.duration,
             "calories": r.calories,
