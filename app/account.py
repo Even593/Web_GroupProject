@@ -18,6 +18,8 @@ import sqlalchemy.orm as sa_orm
 
 bp_view, bp_api = util.make_module_blueprints("user")
 
+__SESSION_KEY_UID = "user_id"
+
 class Gender(enum.IntEnum):
     UNKNOWN = 0
     MALE = 1
@@ -33,7 +35,7 @@ def route_to_login_if_required(view: flask.typing.RouteCallable):
 
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if flask.g.user is None:
+        if not util.get_current_user():
             return flask.redirect(flask.url_for("user.login"))
         return view(**kwargs)
 
@@ -41,11 +43,11 @@ def route_to_login_if_required(view: flask.typing.RouteCallable):
 
 @bp_view.before_app_request
 def _load_logged_in_user():
-    user_id = flask.session.get("user_id")
-    if user_id is None:
-        flask.g.user = None
-    else:
-        flask.g.user = db.db.session.query(Account).filter(Account._id == user_id).scalar()
+    uid = flask.session.get(__SESSION_KEY_UID)
+    user = None
+    if uid:
+        user = db.db.session.query(Account).filter(Account._id == uid).scalar()
+    util.set_current_user(user)
 
 @bp_view.get("/login", endpoint="login")
 def _login():
@@ -84,26 +86,26 @@ def _bp_api_register():
 
 @bp_api.post("/login")
 def _bp_api_login():
-    account: Account | None = None
+    user = None
     params: dict[str, typing.Any] = flask.request.get_json(silent=True)
     if params:
         name = params.get("username")
         password = params.get("password")
         if name and password:
-            account = db.db.session.query(Account).where(
+            user = db.db.session.query(Account).where(
                 Account.name == name,
                 Account.password == password,
             ).scalar()
 
-    if account:
+    if user:
         flask.session.clear()
-        flask.session["user_id"] = account._id
-        flask.g.user = account
+        flask.session[__SESSION_KEY_UID] = user._id
+        util.set_current_user(user)
 
-    return json.dumps({"succeed": (account is not None)})
+    return json.dumps({"succeed": (user is not None)})
 
 @bp_api.post("/logout")
 def _bp_api_logout():
-    flask.g.user = None
+    util.set_current_user(None)
     flask.session.clear()
     return json.dumps({"succeed": True})

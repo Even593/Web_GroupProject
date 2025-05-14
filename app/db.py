@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from . import util
+
 import json
 import typing
 import datetime
@@ -77,9 +79,10 @@ def handle_api_insert(model: __ModelClass, req: flask.Request) -> str:
         values = (values,)
 
     # fill the current user's ID
-    if flask.g.user and issubclass(model, UidMixin):
+    user = util.get_current_user()
+    if user and issubclass(model, UidMixin):
         for item in values:
-            item[model.uid.key] = typing.cast(account.Account, flask.g.user)._id
+            item[model.uid.key] = user._id
 
     # handle implicit type conversions
     for col in model.__table__.columns:
@@ -102,8 +105,9 @@ def handle_api_query(model: __ModelClass, _: flask.Request) -> str:
 
     # TODO(junyuzhang): handle criteria specifiers
     stmt = sa.select(*column_defs)
-    if flask.g.user and issubclass(model, UidMixin):
-        stmt.where(model.uid == typing.cast(account.Account, flask.g.user)._id)
+    user = util.get_current_user()
+    if user and issubclass(model, UidMixin):
+        stmt.where(model.uid == user._id)
 
     objs = []
     for item in db.session.execute(stmt).yield_per(100):
