@@ -34,7 +34,6 @@ def create_app() -> flask.Flask:
         db.db.create_all()
 
     @app.route("/", endpoint="/")
-    @account.route_to_login_if_required
     def __index():
         return flask.render_template("index.html")
 

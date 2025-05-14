@@ -1,6 +1,5 @@
 from . import db
 from . import util
-from . import account
 
 import flask
 import datetime
@@ -18,8 +17,9 @@ class WorkoutRecord(db.UidMixin, db.BaseModel):
     duration: sa_orm.Mapped[int] = sa_orm.mapped_column(sa.Integer)
     calories: sa_orm.Mapped[int] = sa_orm.mapped_column(sa.Integer)
 
-@account.route_to_login_if_required
+
 @bp_view.get("/", endpoint="")
+@util.route_check_login
 def _view_workout():
     return flask.render_template("workout.html")
 
