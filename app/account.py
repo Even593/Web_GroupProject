@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from . import db
 from . import util
 
@@ -82,23 +84,23 @@ def _bp_api_register():
 
 @bp_api.post("/login")
 def _bp_api_login():
-    user: Account | None = None
+    account: Account | None = None
     params: dict[str, typing.Any] = flask.request.get_json(silent=True)
     if params:
         name = params.get("username")
         password = params.get("password")
         if name and password:
-            user = db.db.session.query(Account).where(
+            account = db.db.session.query(Account).where(
                 Account.name == name,
                 Account.password == password,
             ).scalar()
 
-    if user:
+    if account:
         flask.session.clear()
-        flask.session["user_id"] = user._id
-        flask.g.user = user
+        flask.session["user_id"] = account._id
+        flask.g.user = account
 
-    return json.dumps({"succeed": (user is not None)})
+    return json.dumps({"succeed": (account is not None)})
 
 @bp_api.post("/logout")
 def _bp_api_logout():

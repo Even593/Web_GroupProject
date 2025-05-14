@@ -1,6 +1,6 @@
 from . import db
 from . import util
-from . import user
+from . import account
 
 import flask
 import datetime
@@ -18,7 +18,7 @@ class WorkoutRecord(db.UidMixin, db.BaseModel):
     duration: sa_orm.Mapped[int] = sa_orm.mapped_column(sa.Integer)
     calories: sa_orm.Mapped[int] = sa_orm.mapped_column(sa.Integer)
 
-@user.route_to_login_if_required
+@account.route_to_login_if_required
 @bp_view.get("/", endpoint="")
 def _view_workout():
     return flask.render_template("workout.html")
@@ -46,7 +46,7 @@ def share_workout():
     record_id = data.get("record_id")
     to_user_name = data.get("to_username")
 
-    from .user import Account  # 避免循环引用
+    from .account import Account  # 避免循环引用
     to_user = db.db.session.query(Account).filter_by(name=to_user_name).first()
     if not to_user:
         return flask.jsonify({"succeed": False, "error": "User not found"})
