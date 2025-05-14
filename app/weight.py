@@ -1,24 +1,19 @@
 import os
 import typing
-from lib2to3.pgen2.tokenize import endprogs
 
 import flask
-from fpdf import FPDF
 from flask import Blueprint, render_template, redirect, url_for, request, flash, send_file
-from flask_login import current_user, login_required
 from . import db
-from . import user
+from . import account
 from . import util
-from .forms import WeightForm
 from .db import WeightRecord
-from .user import route_to_login_if_required
 
 bp_view, bp_api = util.make_module_blueprints("weight")
 
 @bp_view.get("/", endpoint="/")
 def _index():
     form = WeightForm()
-    weight_records = WeightRecord.query.filter_by(user_id=typing.cast(user.Account, flask.g.user)._id).all()
+    weight_records = WeightRecord.query.filter_by(user_id=typing.cast(account.Account, flask.g.user)._id).all()
     return render_template("weight.html", form=form, records=weight_records, export_url=url_for("weight.export_pdf"))
 
 
@@ -28,7 +23,7 @@ def _form():
 
     if form.validate_on_submit():
         new_record = WeightRecord(
-            user_id=typing.cast(user.Account, flask.g.user)._id,
+            user_id=typing.cast(account.Account, flask.g.user)._id,
             record_date=form.record_date.data,
             weight_kg=form.weight_kg.data
         )
@@ -37,11 +32,12 @@ def _form():
     return redirect(url_for("weight./"))
 
 def ___index():
+    from .forms import WeightForm
     form = WeightForm()
 
     if form.validate_on_submit():
         new_record = WeightRecord(
-            user_id=typing.cast(user.Account, flask.g.user)._id,
+            user_id=typing.cast(account.Account, flask.g.user)._id,
             record_date=form.record_date.data,
             weight_kg=form.weight_kg.data
         )
@@ -50,12 +46,13 @@ def ___index():
         return redirect(url_for("weight.index"))
 
     #weight_records = WeightRecord.query.all()
-    weight_records = WeightRecord.query.filter_by(user_id=typing.cast(user.Account, flask.g.user)._id).all()
+    weight_records = WeightRecord.query.filter_by(user_id=typing.cast(account.Account, flask.g.user)._id).all()
 
     return render_template("weight.html", form=form, records=weight_records, export_url=url_for("weight.export_pdf"))
 
 @bp_view.get("/export_pdf", endpoint="export_pdf")
 def _export_pdf():
+    from fpdf import FPDF
     weight_records = WeightRecord.query.all()
 
     pdf = FPDF()
@@ -84,5 +81,4 @@ def _export_pdf():
     print(f"PDF saved at: {pdf_path}")
 
     return send_file(pdf_path, as_attachment=True)
-
 

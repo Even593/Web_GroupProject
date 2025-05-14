@@ -64,7 +64,7 @@ def __transform_column_values(values, key, fn):
             item[key] = fn(value)
 
 def handle_api_insert(model: __ModelClass, req: flask.Request) -> str:
-    from . import user
+    from . import account
 
     # parameters should be a json string
     params = req.get_json(silent=True)
@@ -79,7 +79,7 @@ def handle_api_insert(model: __ModelClass, req: flask.Request) -> str:
     # fill the current user's ID
     if flask.g.user and issubclass(model, UidMixin):
         for item in values:
-            item[model.uid.key] = typing.cast(user.Account, flask.g.user)._id
+            item[model.uid.key] = typing.cast(account.Account, flask.g.user)._id
 
     # handle implicit type conversions
     for col in model.__table__.columns:
@@ -94,7 +94,7 @@ def handle_api_insert(model: __ModelClass, req: flask.Request) -> str:
 
 
 def handle_api_query(model: __ModelClass, _: flask.Request) -> str:
-    from . import user
+    from . import account
 
     column_defs = model.__table__.columns
     column_keys = tuple(c.key for c in column_defs)
@@ -103,7 +103,7 @@ def handle_api_query(model: __ModelClass, _: flask.Request) -> str:
     # TODO(junyuzhang): handle criteria specifiers
     stmt = sa.select(*column_defs)
     if flask.g.user and issubclass(model, UidMixin):
-        stmt = stmt.where(model.uid == typing.cast(user.Account, flask.g.user)._id)
+        stmt.where(model.uid == typing.cast(account.Account, flask.g.user)._id)
 
     objs = []
     for item in db.session.execute(stmt).yield_per(100):
