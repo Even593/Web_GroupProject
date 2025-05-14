@@ -29,6 +29,7 @@ class WeightRecord(db.Model):
     weight_kg = db.Column(db.Float, nullable=False)
     
 class SharedWorkout(db.Model):
+    __tablename__ = "shared_workout"
     from_user_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
     to_user_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
     record_id = db.Column(db.Integer, db.ForeignKey("workout_record.id"), nullable=False)

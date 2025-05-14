@@ -91,20 +91,17 @@ $(function() {
         else
             $table.find(`> tr:nth-child(${idx})`).after($row);
 
-        $row.find("button").on("click", function() {
-            $.ajax({
-                type: "POST",
-                url: "/api/workout/record/delete",
-                data: JSON.stringify({
-                    ids: [id],
-                }),
-                dataType: "json",
-                contentType: "application/json",
-            }).done(function(data) {
-                if (data.succeed)
-                    $row.remove();
+            $row.find(".btn-secondary").on("click", function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/workout/record/delete",
+                    data: JSON.stringify({ ids: [id] }),
+                    dataType: "json",
+                    contentType: "application/json",
+                }).done(function(data) {
+                    if (data.succeed) $row.remove();
+                });
             });
-        });
     }
 
 

@@ -11,6 +11,8 @@ import sqlalchemy.orm as sa_orm
 bp_view, bp_api = util.make_module_blueprints("workout")
 
 class WorkoutRecord(db.UidMixin, db.BaseModel):
+    __tablename__ = "workout_record"
+    uid: sa_orm.Mapped[int] = sa_orm.mapped_column(sa.ForeignKey("account.id"), nullable=False)
     date: sa_orm.Mapped[datetime.date] = sa_orm.mapped_column(sa.Date)
     notes: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.UnicodeText)
     duration: sa_orm.Mapped[int] = sa_orm.mapped_column(sa.Integer)
