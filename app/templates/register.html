@@ -29,18 +29,13 @@
 {% endblock %}
 
 {% block script %}
-<script type="text/javascript">
+<script type="module">
+import { jsonApiPost } from "/static/js/util.js";
 $(function() {
     $("#register-submit").on("click", function() {
-        $.ajax({
-            type: "POST",
-            url: "/api/user/register",
-            data: JSON.stringify({
-                username: $("#register-username").val(),
-                password: $("#register-password").val(),
-            }),
-            dataType: "json",
-            contentType: "application/json",
+        jsonApiPost("/api/user/register", {
+            username: $("#register-username").val(),
+            password: $("#register-password").val(),
         }).done(function(data) {
             if (data.succeed)
                 window.location.replace("/user/login");

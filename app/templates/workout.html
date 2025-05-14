@@ -45,7 +45,8 @@
 {% endblock %}
 
 {% block script %}
-<script type="text/javascript">
+<script type="module">
+import { jsonApiGet, jsonApiPost } from "/static/js/util.js";
 $(function() {
     function binarySearch(array, target) {
         let low = 0;
@@ -91,17 +92,12 @@ $(function() {
         else
             $table.find(`> tr:nth-child(${idx})`).after($row);
 
-            $row.find(".btn-secondary").on("click", function() {
-                $.ajax({
-                    type: "POST",
-                    url: "/api/workout/record/delete",
-                    data: JSON.stringify({ ids: [id] }),
-                    dataType: "json",
-                    contentType: "application/json",
-                }).done(function(data) {
-                    if (data.succeed) $row.remove();
-                });
+        $row.find(".btn-secondary").on("click", function() {
+            jsonApiPost("/api/workout/record/delete", { ids: [id] }).done(function(data) {
+                if (data.succeed)
+                    $row.remove();
             });
+        }
     }
 
 
@@ -109,7 +105,7 @@ $(function() {
     const records = [];
     const $table = $("#workout-table > tbody");
 
-    $.getJSON("/api/workout/record/query").done(function(data) {
+    jsonApiGet("/api/workout/record/query").done(function(data) {
         if (data.succeed) {
             $.each(data.result, function(idx, record) {
                 insertRow($table, records, dates, record.id, record);
@@ -125,13 +121,7 @@ $(function() {
             notes: $("#workout-form-notes").val(),
         };
 
-        $.ajax({
-            type: "POST",
-            url: "/api/workout/record/insert",
-            data: JSON.stringify(item),
-            dataType: "json",
-            contentType: "application/json",
-        }).done(function(data) {
+        jsonApiPost("/api/workout/record/insert", item).done(function(data) {
             if (data.succeed)
                 insertRow($table, records, dates, data.ids[0], item);
         });

@@ -28,14 +28,17 @@ def view_shared_workouts():
     return flask.render_template("workout_shared.html")
 
 @bp_api.post("/record/insert")
+@util.route_check_csrf
 def _bp_api_workout_insert():
     return db.handle_api_insert(WorkoutRecord, flask.request)
 
 @bp_api.get("/record/query")
+@util.route_check_csrf
 def _bp_api_workout_query():
     return db.handle_api_query(WorkoutRecord, flask.request)
 
 @bp_api.post("/record/delete")
+@util.route_check_csrf
 def _bp_api_workout_delete():
     return db.handle_api_delete(WorkoutRecord, flask.request)
 
