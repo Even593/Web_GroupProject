@@ -13,7 +13,7 @@ bp_view, bp_api = util.make_module_blueprints("weight")
 @bp_view.get("/", endpoint="/")
 def _index():
     form = WeightForm()
-    weight_records = WeightRecord.query.filter_by(user_id=util.get_current_user()._id).all()
+    weight_records = WeightRecord.query.filter_by(user_id=util.get_current_user().id).all()
     return render_template("weight.html", form=form, records=weight_records, export_url=url_for("weight.export_pdf"))
 
 
@@ -23,7 +23,7 @@ def _form():
 
     if form.validate_on_submit():
         new_record = WeightRecord(
-            user_id=util.get_current_user()._id,
+            user_id=util.get_current_user().id,
             record_date=form.record_date.data,
             weight_kg=form.weight_kg.data
         )
@@ -37,7 +37,7 @@ def ___index():
 
     if form.validate_on_submit():
         new_record = WeightRecord(
-            user_id=util.get_current_user()._id,
+            user_id=util.get_current_user().id,
             record_date=form.record_date.data,
             weight_kg=form.weight_kg.data
         )
@@ -46,7 +46,7 @@ def ___index():
         return redirect(url_for("weight.index"))
 
     #weight_records = WeightRecord.query.all()
-    weight_records = WeightRecord.query.filter_by(user_id=util.get_current_user()._id).all()
+    weight_records = WeightRecord.query.filter_by(user_id=util.get_current_user().id).all()
 
     return render_template("weight.html", form=form, records=weight_records, export_url=url_for("weight.export_pdf"))
 
