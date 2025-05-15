@@ -40,12 +40,12 @@ $(function() {
         jsonApiPost("/api/user/register", {
             username: $("#register-username").val(),
             password: $("#register-password").val(),
+            email: $("#register-email").val(),
         }).done(function(data) {
             if (data.succeed)
                 window.location.replace("/user/login");
         });
     });
-  });
 });
 </script>
 {% endblock %}
