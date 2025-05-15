@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-bold mb-4">Records Shared With Me</h2>
+
+  <table class="table table-bordered" id="shared-table">
+    <thead class="table-light">
+      <tr>
+        <th>Date</th>
+        <th>Duration</th>
+        <th>Calories</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+$(function () {
+  $.getJSON("/api/workout/record/shared-with-me").done(function (data) {
+    if (!data.succeed) return;
+
+    const $table = $("#shared-table > tbody");
+    $.each(data.result, function (i, record) {
+      const $row = $(`
+        <tr>
+          <td>${record.date}</td>
+          <td>${record.duration} min</td>
+          <td>${record.calories} cal</td>
+          <td>${record.notes}</td>
+        </tr>
+      `);
+      $table.append($row);
+    });
+  });
+});
+</script>
+{% endblock %}
