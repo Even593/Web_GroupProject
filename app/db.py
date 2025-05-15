@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from . import util
+
 import json
 import typing
 import datetime
@@ -11,7 +13,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
 
 class __BaseModel(sa_orm.DeclarativeBase):
-    _id: sa_orm.Mapped[int] = sa_orm.mapped_column("id", primary_key=True)
+    id: sa_orm.Mapped[int] = sa_orm.mapped_column(primary_key=True)
 
 db = flask_sqlalchemy.SQLAlchemy(model_class=__BaseModel)
 
@@ -48,7 +50,7 @@ __TYPE_CONVERSION_OUT = {
     sa.DateTime: lambda d: d.strftime("%Y-%m-%dT%H:%M"),
 }
 
-def __make_response(succeed: bool, ids: typing.Sequence[int] | None, objs: typing.Any | None):
+def __make_response(succeed: bool, ids, objs):
     result = dict()
     result["succeed"] = succeed
     if ids:
@@ -64,7 +66,7 @@ def __transform_column_values(values, key, fn):
             item[key] = fn(value)
 
 def handle_api_insert(model: __ModelClass, req: flask.Request) -> str:
-    from . import user
+    from . import account
 
     # parameters should be a json string
     params = req.get_json(silent=True)
@@ -77,9 +79,10 @@ def handle_api_insert(model: __ModelClass, req: flask.Request) -> str:
         values = (values,)
 
     # fill the current user's ID
-    if flask.g.user and issubclass(model, UidMixin):
+    user = util.get_current_user()
+    if user and issubclass(model, UidMixin):
         for item in values:
-            item[model.uid.key] = typing.cast(user.Account, flask.g.user)._id
+            item[model.uid.key] = user.id
 
     # handle implicit type conversions
     for col in model.__table__.columns:
@@ -87,14 +90,14 @@ def handle_api_insert(model: __ModelClass, req: flask.Request) -> str:
         if fn:
             __transform_column_values(values, col.key, fn)
 
-    stmt = sa.insert(model).values(values).returning(model._id)
+    stmt = sa.insert(model).values(values).returning(model.id)
     ids = db.session.scalars(stmt).all()
     db.session.commit()
     return __make_response(True, ids, None)
 
 
 def handle_api_query(model: __ModelClass, _: flask.Request) -> str:
-    from . import user
+    from . import account
 
     column_defs = model.__table__.columns
     column_keys = tuple(c.key for c in column_defs)
@@ -102,8 +105,9 @@ def handle_api_query(model: __ModelClass, _: flask.Request) -> str:
 
     # TODO(junyuzhang): handle criteria specifiers
     stmt = sa.select(*column_defs)
-    if flask.g.user and issubclass(model, UidMixin):
-        stmt = stmt.where(model.uid == typing.cast(user.Account, flask.g.user)._id)
+    user = util.get_current_user()
+    if user and issubclass(model, UidMixin):
+        stmt.where(model.uid == user.id)
 
     objs = []
     for item in db.session.execute(stmt).yield_per(100):
@@ -126,6 +130,6 @@ def handle_api_delete(model: __ModelClass, req: flask.Request) -> str:
     if not ids:
         return __make_response(False, None, None)
 
-    db.session.execute(sa.delete(model).where(model._id.in_(ids)))
+    db.session.execute(sa.delete(model).where(model.id.in_(ids)))
     db.session.commit()
     return __make_response(True, None, None)
