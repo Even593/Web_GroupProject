@@ -14,6 +14,7 @@ import flask.typing
 
 import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
+from sqlalchemy import and_
 
 bp_view, bp_api = util.make_module_blueprints("user")
 
@@ -26,6 +27,7 @@ class Gender(enum.IntEnum):
 
 class Account(db.BaseModel):
     name: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(30), unique=True)
+    email: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(100), unique=True)
     password: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(30))
     gender: sa_orm.Mapped[Gender] = sa_orm.mapped_column(sa.Enum(Gender))
     birthdate: sa_orm.Mapped[datetime.date] = sa_orm.mapped_column(sa.Date)
@@ -58,21 +60,36 @@ def __parse_date(s: str) -> datetime.date:
 @util.route_check_csrf
 def _bp_api_register():
     succeed = False
+    message = ""
     params = flask.request.get_json(silent=True)
     if params:
-        db.db.session.execute(
-            sa.insert(Account).returning(Account).values(
-                name=params["username"],
-                password=params["password"],
-                gender=Gender.MALE,
-                birthdate=__parse_date("2025-01-01"),
-            )
-        )
-        db.db.session.commit()
-        succeed = True
+        name = params.get("username")
+        password = params.get("password")
+        email = params.get("email")
 
-    #TODO(junyu): error message
-    return json.dumps({"succeed": succeed})
+        import re
+        if not name or not password or not email:
+            message = "Missing fields"
+        elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            message = "Invalid email format"
+        elif db.db.session.query(Account).filter_by(name=name).first():
+            message = "Username already exists"
+        elif db.db.session.query(Account).filter_by(email=email).first():
+            message = "Email already registered"
+        else:
+            db.db.session.execute(
+                sa.insert(Account).values(
+                    name=name,
+                    email=email,
+                    password=password,
+                    gender=Gender.UNKNOWN,
+                    birthdate=datetime.date.today()
+                )
+            )
+            db.db.session.commit()
+            succeed = True
+
+    return flask.jsonify({"succeed": succeed, "message": message})
 
 @bp_api.post("/login")
 @util.route_check_csrf
@@ -84,8 +101,10 @@ def _bp_api_login():
         password = params.get("password")
         if name and password:
             user = db.db.session.query(Account).where(
-                Account.name == name,
-                Account.password == password,
+                and_(
+                    Account.name == name,
+                    Account.password == password,
+                )
             ).scalar()
 
     if user:
