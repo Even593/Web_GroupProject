@@ -18,7 +18,7 @@ class RouteTestCase(unittest.TestCase):
     def test_protected_route_requires_login(self):
         #test 'login required' for /weight
         resp = self.client.get('/weight')
-        # 未登录应被重定向到登录页
+        # redirect to
         self.assertEqual(resp.status_code, 308)
 
 

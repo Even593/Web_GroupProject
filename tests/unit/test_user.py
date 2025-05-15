@@ -23,7 +23,7 @@ class UserTestCase(unittest.TestCase):
 
 
     def test_register_and_login_logout(self):
-        # 1) 注册
+        #  register
         payload = {"username": "bob", "password": "secret"}
         rv = self.client.post(
             url_for('api.user._bp_api_register'),
@@ -33,12 +33,12 @@ class UserTestCase(unittest.TestCase):
         data = json.loads(rv.data)
         self.assertTrue(data['succeed'])
 
-        # 数据库中确实有该用户
+        # query table
         u = Account.query.filter_by(name="bob").first()
         self.assertIsNotNone(u)
         self.assertEqual(u.gender, Gender.MALE)
 
-        # 2) 登陆
+        # log in
         rv = self.client.post(
             url_for('api.user._bp_api_login'),
             data=json.dumps(payload),
@@ -47,7 +47,6 @@ class UserTestCase(unittest.TestCase):
         data = json.loads(rv.data)
         self.assertTrue(data['succeed'])
 
-        # session 中存了 user_id，g.user 也被设置
         with self.client:
             self.client.post(
                 url_for('api.user._bp_api_login'),
@@ -58,12 +57,12 @@ class UserTestCase(unittest.TestCase):
             self.assertIsNotNone(g.user)
             self.assertEqual(g.user.name, "bob")
 
-        # 3) 登出
+        #  log out
         rv = self.client.post(url_for('api.user._bp_api_logout'))
         data = json.loads(rv.data)
         self.assertTrue(data['succeed'])
         with self.client:
-            self.client.get('/')  # 触发 before_app_request
+            self.client.get('/')
             self.assertIsNone(g.user)
             self.assertNotIn('user_id', session)
 

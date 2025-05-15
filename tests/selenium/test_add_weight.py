@@ -65,5 +65,4 @@ class TestAddweight():
         # wait for and click "View Chart" link
         view_chart_link = self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "View Chart")))
         view_chart_link.click()
-        # wait for the record table to load fully
 

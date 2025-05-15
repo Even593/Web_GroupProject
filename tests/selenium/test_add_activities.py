@@ -45,5 +45,3 @@ class TestAddactivities():
         self.driver.find_element(By.ID, "workout-form-notes").send_keys("feel good")
         self.driver.find_element(By.ID, "workout-add").click()
         self.driver.find_element(By.LINK_TEXT, "Analytics").click()
-        # wait for analytics URL or page indicator
-        # wait for analytics view and verify entry
