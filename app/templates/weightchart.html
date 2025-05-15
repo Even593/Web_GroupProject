@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container py-5">
+        <h2 class="mb-4">Weight Analysis</h2>
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h6>Total Records</h6>
+                    <h3 id="wa-count">—</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h6>Average Weight (kg)</h6>
+                    <h3 id="wa-avg">—</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h6>Min Weight (kg)</h6>
+                    <h3 id="wa-min">—</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h6>Max Weight (kg)</h6>
+                    <h3 id="wa-max">—</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-4 mb-4">
+            <h5 class="mb-3">Weight Over Time</h5>
+            <canvas id="wa-chart"></canvas>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  $(function() {
+    $.getJSON("/weightchart/data")
+      .done(function(json) {
+        if (!json.series || !json.series.length) return;
+
+        const labels     = json.series.map(p => p[0]);
+        const weightData = json.series.map(p => p[1]);
+        const bmiData    = json.series.map(p => p[2]);
+
+        const totalCount = weightData.length;
+        const avgWeight  = totalCount ? (weightData.reduce((sum, w) => sum + w, 0) / totalCount).toFixed(1) : '—';
+        const minWeight  = totalCount ? Math.min(...weightData).toFixed(1) : '—';
+        const maxWeight  = totalCount ? Math.max(...weightData).toFixed(1) : '—';
+
+        // cards
+        $("#wa-count").text(totalCount);
+        $("#wa-avg").text(avgWeight);
+        $("#wa-min").text(minWeight);
+        $("#wa-max").text(maxWeight);
+
+
+        // Healthy BMI range lines
+        const lowerBound = labels.map(() => 18.5);
+        const upperBound = labels.map(() => 24.9);
+
+        new Chart(
+          document.getElementById("wa-chart"),
+          {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'Weight (kg)',
+                  data: weightData,
+                  yAxisID: 'y1',
+                  borderColor: 'rgba(75,192,192,1)',
+                  fill: false,
+                  tension: 0.3
+                },
+                {
+                  label: 'BMI',
+                  data: bmiData,
+                  yAxisID: 'y2',
+                  borderColor: 'rgba(153,102,255,1)',
+                  fill: false,
+                  tension: 0.3
+                },
+                {
+                  label: 'BMI Lower Bound (18.5)',
+                  data: lowerBound,
+                  yAxisID: 'y2',
+                  borderColor: 'rgba(0,200,0,0.4)',
+                  borderDash: [5,5],
+                  pointRadius: 0,
+                  fill: false,
+                  tension: 0
+                },
+                {
+                  label: 'BMI Upper Bound (24.9)',
+                  data: upperBound,
+                  yAxisID: 'y2',
+                  borderColor: 'rgba(0,200,0,0.4)',
+                  borderDash: [5,5],
+                  pointRadius: 0,
+                  fill: false,
+                  tension: 0
+                }
+              ]
+            },
+            options: {
+              scales: {
+                y1: {
+                  type: 'linear',
+                  position: 'left',
+                  title: { display: true, text: 'Weight (kg)' }
+                },
+                y2: {
+                  type: 'linear',
+                  position: 'right',
+                  title: { display: true, text: 'BMI' },
+                  grid: { drawOnChartArea: false }
+                }
+              },
+              plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                  callbacks: {
+                    label: function(ctx) {
+                      return ctx.dataset.label + ': ' + ctx.parsed.y + (ctx.dataset.label.includes('Weight') ? ' kg' : '');
+                    }
+                  }
+                }
+              }
+            }
+          }
+        );
+      })
+      .fail(function() {
+        console.error('Failed to load weight/BMI data.');
+      });
+  });
+</script>
+{% endblock %}
