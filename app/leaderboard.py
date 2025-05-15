@@ -6,7 +6,6 @@ from . import util, user
 from . import db
 from .workout import WorkoutRecord
 
-# Create view Blueprint for leaderboard
 bp_view, _ = util.make_module_blueprints("leaderboard")
 
 @user.route_to_login_if_required
@@ -24,7 +23,6 @@ def view_leaderboard():
         .all()
     )
 
-    # Aggregate calories per user (uid foreign key)
     cal_by_user = {}
     for rec in records:
         uid = rec.uid
