@@ -1,14 +1,23 @@
 import flask
 
-from app import leaderboard
+# def create_app() -> flask.Flask:
+#     from . import db
+#     api = flask.Blueprint("api", __name__, url_prefix="/api")
+#     app = flask.Flask(__name__)
+#     app.config["SECRET_KEY"] = "dev"
+#     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+#     db.db.init_app(app)
 
+def create_app(config_name: str = "development") -> flask.Flask:
 
-def create_app() -> flask.Flask:
     from . import db
     api = flask.Blueprint("api", __name__, url_prefix="/api")
     app = flask.Flask(__name__)
-    app.config["SECRET_KEY"] = "dev"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+    from tests.unit.config import config_mapping
+    config_class = config_mapping.get(config_name)
+    if config_class is None:
+        raise ValueError(f"Unknown config name '{config_name}'")
+    app.config.from_object(config_class)
     db.db.init_app(app)
 
     from . import user
@@ -17,6 +26,7 @@ def create_app() -> flask.Flask:
     from . import analytics
     from . import profile
     from . import weightchart
+    from . import leaderboard
     api.register_blueprint(user.bp_api)
     app.register_blueprint(user.bp_view)
     api.register_blueprint(weight.bp_api)
