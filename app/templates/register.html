@@ -33,32 +33,17 @@
 {% endblock %}
 
 {% block script %}
-<script type="text/javascript">
+<script type="module">
+import { jsonApiPost } from "/static/js/util.js";
 $(function() {
-  $("#register-submit").on("click", function() {
-    const email = $("#register-email").val();
-    const username = $("#register-username").val();
-    const password = $("#register-password").val();
-
-    // test email format
-    const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-    if (!emailPattern.test(email)) {
-      alert("Invalid email format.");
-      return;
-    }
-
-    $.ajax({
-      type: "POST",
-      url: "/api/user/register",
-      data: JSON.stringify({ username, email, password }),
-      contentType: "application/json",
-    }).done(function(data) {
-      if (data.succeed) {
-        alert("Registration successful! Please login.");
-        window.location.href = "/user/login";
-      } else {
-        alert("Failed: " + data.error);
-      }
+    $("#register-submit").on("click", function() {
+        jsonApiPost("/api/user/register", {
+            username: $("#register-username").val(),
+            password: $("#register-password").val(),
+        }).done(function(data) {
+            if (data.succeed)
+                window.location.replace("/user/login");
+        });
     });
   });
 });

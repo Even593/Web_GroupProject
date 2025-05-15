@@ -33,6 +33,11 @@ def create_app() -> flask.Flask:
     with app.app_context():
         db.db.create_all()
 
+    @app.context_processor
+    def __inject_csrf_token():
+        from . import util
+        return {"csrf_token": util.csrf_ensure_token()}
+
     @app.route("/", endpoint="/")
     def __index():
         return flask.render_template("index.html")

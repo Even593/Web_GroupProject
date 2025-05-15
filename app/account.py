@@ -57,6 +57,7 @@ def __parse_date(s: str) -> datetime.date:
     return datetime.datetime.now().date()
 
 @bp_api.post("/register")
+@util.route_check_csrf
 def _bp_api_register():
     succeed = False
     message = ""
@@ -91,6 +92,7 @@ def _bp_api_register():
     return flask.jsonify({"succeed": succeed, "message": message})
 
 @bp_api.post("/login")
+@util.route_check_csrf
 def _bp_api_login():
     user = None
     params: dict[str, typing.Any] = flask.request.get_json(silent=True)
@@ -113,6 +115,7 @@ def _bp_api_login():
     return json.dumps({"succeed": (user is not None)})
 
 @bp_api.post("/logout")
+@util.route_check_csrf
 def _bp_api_logout():
     util.set_current_user(None)
     flask.session.clear()
