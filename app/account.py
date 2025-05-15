@@ -11,10 +11,10 @@ import datetime
 
 import flask
 import flask.typing
+import werkzeug.security
 
 import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
-from sqlalchemy import and_
 
 bp_view, bp_api = util.make_module_blueprints("user")
 
@@ -28,7 +28,7 @@ class Gender(enum.IntEnum):
 class Account(db.BaseModel):
     name: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(30), unique=True)
     email: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(100), unique=True)
-    password: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(30))
+    password: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(128))
     gender: sa_orm.Mapped[Gender] = sa_orm.mapped_column(sa.Enum(Gender))
     birthdate: sa_orm.Mapped[datetime.date] = sa_orm.mapped_column(sa.Date)
 
@@ -81,7 +81,7 @@ def _bp_api_register():
                 sa.insert(Account).values(
                     name=name,
                     email=email,
-                    password=password,
+                    password=werkzeug.security.generate_password_hash(password),
                     gender=Gender.UNKNOWN,
                     birthdate=datetime.date.today()
                 )
@@ -94,25 +94,26 @@ def _bp_api_register():
 @bp_api.post("/login")
 @util.route_check_csrf
 def _bp_api_login():
-    user = None
-    params: dict[str, typing.Any] = flask.request.get_json(silent=True)
-    if params:
-        name = params.get("username")
-        password = params.get("password")
-        if name and password:
-            user = db.db.session.query(Account).where(
-                and_(
-                    Account.name == name,
-                    Account.password == password,
-                )
-            ).scalar()
+    def __find_and_check_account(name, password):
+        if not name or not password:
+            return None
 
+        # passwords are not stored in plain text, so we need to check it specially after retrieving
+        account = typing.cast(Account, db.db.session.query(Account).where(Account.name == name).scalar())
+        if not account or not werkzeug.security.check_password_hash(account.password, password):
+            return None
+        return account
+
+    succeed = False
+    params = flask.request.get_json(silent=True)
+    user = __find_and_check_account(params.get("username"), params.get("password"))
     if user:
+        succeed = True
         flask.session.clear()
         flask.session[__SESSION_KEY_UID] = user.id
         util.set_current_user(user)
 
-    return json.dumps({"succeed": (user is not None)})
+    return util.make_json_response(succeed)
 
 @bp_api.post("/logout")
 @util.route_check_csrf
