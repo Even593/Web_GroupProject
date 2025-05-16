@@ -18,7 +18,6 @@ def create_app() -> flask.Flask:
     from . import leaderboard
     api.register_blueprint(account.bp_api)
     app.register_blueprint(account.bp_view)
-    api.register_blueprint(weight.bp_api)
     app.register_blueprint(weight.bp_view)
     api.register_blueprint(workout.bp_api)
     app.register_blueprint(workout.bp_view)
