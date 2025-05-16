@@ -3,16 +3,15 @@ from __future__ import annotations
 
 from . import util
 
-import json
-import typing
-import datetime
-
 import flask
-import flask_migrate
 import flask_sqlalchemy
 
 import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
+
+import typing
+import datetime
+import json
 
 # Base model class with auto-incrementing primary key 'id'
 class __BaseModel(sa_orm.DeclarativeBase):
@@ -21,7 +20,7 @@ class __BaseModel(sa_orm.DeclarativeBase):
 # SQLAlchemy instance using our custom base model
 db = flask_sqlalchemy.SQLAlchemy(model_class=__BaseModel)
 
-migration = flask_migrate.Migrate()
+# removed migration setup since flask_migrate not installed
 
 # Alias for model base class to support type checking and runtime use
 if typing.TYPE_CHECKING:
@@ -43,8 +42,9 @@ class SharedWorkout(db.Model):
 # Table to store mutual friendship relationships between users
 class Friendship(db.Model):
     __tablename__ = "friendship"
-    user_id = db.Column(db.Integer, db.ForeignKey("account.id"), primary_key=True)
-    friend_id = db.Column(db.Integer, db.ForeignKey("account.id"), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
+    friend_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     # This table represents a mutual friendship (both users must add each other)
 

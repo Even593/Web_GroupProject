@@ -1,15 +1,21 @@
 import flask
 
-def create_app(config_name: str = "development") -> flask.Flask:
-    import os
-    from . import db
+# def create_app() -> flask.Flask:
+#     from . import db
+#     api = flask.Blueprint("api", __name__, url_prefix="/api")
+#     app = flask.Flask(__name__)
+#     app.config["SECRET_KEY"] = "dev"
+#     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+#     db.db.init_app(app)
 
+def create_app(config_name: str = "development") -> flask.Flask:
+
+    from . import db
     api = flask.Blueprint("api", __name__, url_prefix="/api")
     app = flask.Flask(__name__)
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or "dev"
+    app.config["SECRET_KEY"] = "dev"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
     db.db.init_app(app)
-    db.migration.init_app(app, db.db)
 
     from . import account
     from . import weight
@@ -43,5 +49,11 @@ def create_app(config_name: str = "development") -> flask.Flask:
     @app.route("/", endpoint="/")
     def __index():
         return flask.render_template("index.html")
+
+    @app.errorhandler(Exception)
+    def handle_all_exceptions(e):
+        import traceback
+        traceback.print_exc()
+        return flask.jsonify({"succeed": False, "message": str(e)}), 500
 
     return app

@@ -79,7 +79,6 @@ def _bp_api_register():
         password = params.get("password")
         email = params.get("email")
 
-        import re
         if not name or not password or not email:
             message = "Missing fields"
         elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
@@ -110,8 +109,6 @@ def _bp_api_login():
     def __find_and_check_account(name, password):
         if not name or not password:
             return None
-
-        # passwords are not stored in plain text, so we need to check it specially after retrieving
         account = typing.cast(Account, db.db.session.query(Account).where(Account.name == name).scalar())
         if not account or not werkzeug.security.check_password_hash(account.password, password):
             return None
@@ -143,27 +140,23 @@ def api_add_friend():
     """
     Add a friend by username. If both users add each other, friendship is mutual.
     """
-    from . import db
-    params = flask.request.get_json(silent=True)
-    if not params or not params.get("username"):
-        return flask.jsonify({"succeed": False, "message": "Missing username"})
-    current_user = util.get_current_user()
-    friend = db.db.session.query(Account).filter_by(name=params["username"]).first()
-    if not friend or friend.id == current_user.id:
-        return flask.jsonify({"succeed": False, "message": "User not found or invalid"})
-    # Check if already friends
-    exists = db.db.session.query(db.Friendship).filter_by(user_id=current_user.id, friend_id=friend.id).first()
-    if exists:
-        return flask.jsonify({"succeed": False, "message": "Already friends or pending mutual"})
-    # Add friendship (one direction)
-    db.db.session.add(db.Friendship(user_id=current_user.id, friend_id=friend.id))
-    db.db.session.commit()
-    # Check if the other user also added current user
-    mutual = db.db.session.query(db.Friendship).filter_by(user_id=friend.id, friend_id=current_user.id).first()
-    if mutual:
-        # Optionally, notify both users of mutual friendship
-        pass
-    return flask.jsonify({"succeed": True})
+    try:
+        params = flask.request.get_json(silent=True)
+        if not params or not params.get("username"):
+            return flask.jsonify({"succeed": False, "message": "Missing username"})
+        current_user = util.get_current_user()
+        friend = db.db.session.query(Account).filter_by(name=params["username"]).first()
+        if not friend or friend.id == current_user.id:
+            return flask.jsonify({"succeed": False, "message": "User not found or invalid"})
+        exists = db.db.session.query(db.Friendship).filter_by(user_id=current_user.id, friend_id=friend.id).first()
+        if exists:
+            return flask.jsonify({"succeed": False, "message": "Already friends or pending mutual"})
+        db.db.session.add(db.Friendship(user_id=current_user.id, friend_id=friend.id))
+        db.db.session.commit()
+        return flask.jsonify({"succeed": True})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return flask.jsonify({"succeed": False, "message": str(e)})
 
 # API endpoint to remove a friend
 @bp_api.post("/remove-friend")
@@ -172,7 +165,6 @@ def api_remove_friend():
     """
     Remove a friend by friend_id. Removes both directions if mutual.
     """
-    from . import db
     params = flask.request.get_json(silent=True)
     if not params or not params.get("friend_id"):
         return flask.jsonify({"succeed": False, "message": "Missing friend_id"})
@@ -203,11 +195,8 @@ def api_get_messages():
         ((db.PrivateMessage.sender_id == friend_id) & (db.PrivateMessage.receiver_id == user.id))
     ).order_by(db.PrivateMessage.sent_at.asc()).all()
     result = [
-        {
-            "content": m.content,
-            "sent_at": m.sent_at.strftime("%Y-%m-%d %H:%M"),
-            "is_me": m.sender_id == user.id
-        } for m in msgs
+        {"content": m.content, "sent_at": m.sent_at.strftime("%Y-%m-%d %H:%M"), "is_me": m.sender_id == user.id}
+        for m in msgs
     ]
     return flask.jsonify({"succeed": True, "messages": result})
 
