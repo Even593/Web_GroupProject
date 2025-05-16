@@ -141,6 +141,10 @@ def api_add_friend():
     Add a friend by username. If both users add each other, friendship is mutual.
     """
     try:
+<<<<<<< Updated upstream
+=======
+        from . import db
+>>>>>>> Stashed changes
         params = flask.request.get_json(silent=True)
         if not params or not params.get("username"):
             return flask.jsonify({"succeed": False, "message": "Missing username"})
