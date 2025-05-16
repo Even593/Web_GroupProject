@@ -1,12 +1,10 @@
-import flask
 from . import db
 from . import util
 from . import weight
 
-bp_view, bp_api = util.make_module_blueprints("weightchart")
-bp_view.name = "weightchart_view"
-bp_api.name  = "weightchart_api"
+import flask
 
+bp_view, bp_api = util.make_module_blueprints("weightchart")
 
 # def read_user_weights(user_id):
 #     user_id = flask.g.user._id
@@ -25,13 +23,13 @@ def summarize_weights(records):
         "max": max(weights)
     }
 
-@bp_view.get("/")
+@bp_view.get("/", endpoint="")
 @util.route_check_login
-def view_weight_analysis():
+def _view_weight_analysis():
     return flask.render_template("weightchart.html")
 
 @bp_api.get("/data")
-def api_weight_analysis_data():
+def _api_weight_analysis_data():
     uid = util.get_current_user().id
     session = db.db.session
     qs = session.query(weight.WeightRecord)\

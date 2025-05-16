@@ -43,10 +43,11 @@
 <!-- Import jQuery and Chart.js -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
+<script type="module">
+  import { jsonApiGet } from "/static/js/util.js";
   $(function() {
     // Fetch weight & BMI data from backend endpoint
-    $.getJSON("/weightchart/data")
+    jsonApiGet("/api/weightchart/data")
       .done(function(json) {
         if (!json.series || !json.series.length) return;
 
