@@ -1,7 +1,7 @@
 import datetime
 import unittest
 from app import create_app, db
-from app.user import Account, Gender
+from app.account import Account, Gender
 
 class ModelTestCase(unittest.TestCase):
     def setUp(self):
