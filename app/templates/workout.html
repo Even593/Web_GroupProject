@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Main content container -->
 <div class="container py-5">
   <h2 class="fw-bold mb-4">Workout Records</h2>
+
+   <!-- Workout records table -->
   <div class="p-4">
     <table id="workout-table" class="table">
         <thead>
@@ -17,6 +20,8 @@
         <tbody></tbody>
     </table>
   </div>
+
+  <!-- Workout record input form -->
   <div class="card shadow-sm p-4">
     <div class="row mb-4">
       <div class="col-md-3">
@@ -48,6 +53,8 @@
 <script type="module">
 import { jsonApiGet, jsonApiPost } from "/static/js/util.js";
 $(function() {
+
+    // Binary search to keep workout records sorted by date
     function binarySearch(array, target) {
         let low = 0;
         let high = array.length - 1;
@@ -68,6 +75,7 @@ $(function() {
         return -(low + 1);
     }
 
+    // Insert a workout record row in the table at the correct position
     function insertRow($table, records, dates, id, item) {
         const $row = $(`<tr>
           <td>${item.date}</td>
@@ -105,6 +113,7 @@ $(function() {
     const records = [];
     const $table = $("#workout-table > tbody");
 
+    // Load existing workout records
     jsonApiGet("/api/workout/record/query").done(function(data) {
         if (data.succeed) {
             $.each(data.result, function(idx, record) {
@@ -113,6 +122,7 @@ $(function() {
         }
     });
 
+    // Handle new workout submission
     $("#workout-add").on("click", function() {
         const item = {
             date: $("#workout-form-date").val(),
@@ -128,6 +138,7 @@ $(function() {
     });
 });
 
+// Function to share a workout record with another user
 function shareWorkout(record_id) {
     const toUser = prompt("Enter the username to share with:");
     if (!toUser) return;

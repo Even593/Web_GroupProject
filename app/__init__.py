@@ -1,6 +1,6 @@
 import flask
 
-
+# Factory function to create and configure the Flask application
 def create_app() -> flask.Flask:
     from . import db
     api = flask.Blueprint("api", __name__, url_prefix="/api")

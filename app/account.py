@@ -1,8 +1,11 @@
+# Enable forward type annotations (Python 3.7+ compatibility)
 from __future__ import annotations
 
+# Import local modules
 from . import db
 from . import util
 
+# Standard & third-party imports
 import re
 import enum
 import json
@@ -16,15 +19,19 @@ import werkzeug.security
 import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
 
+# Register view and API blueprints under "user" module
 bp_view, bp_api = util.make_module_blueprints("user")
 
+# Session key used to store logged-in user ID
 __SESSION_KEY_UID = "user_id"
 
+# Enum class for gender field
 class Gender(enum.IntEnum):
     UNKNOWN = 0
     MALE = 1
     FEMALE = 2
 
+# User account database model
 class Account(db.BaseModel):
     name: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(30), unique=True)
     email: sa_orm.Mapped[str] = sa_orm.mapped_column(sa.String(100), unique=True)
@@ -32,6 +39,7 @@ class Account(db.BaseModel):
     gender: sa_orm.Mapped[Gender] = sa_orm.mapped_column(sa.Enum(Gender))
     birthdate: sa_orm.Mapped[datetime.date] = sa_orm.mapped_column(sa.Date)
 
+# Load logged-in user from session before each request
 @bp_view.before_app_request
 def _load_logged_in_user():
     uid = flask.session.get(__SESSION_KEY_UID)
@@ -40,15 +48,18 @@ def _load_logged_in_user():
         user = db.db.session.query(Account).filter(Account.id == uid).scalar()
     util.set_current_user(user)
 
+# Render login page
 @bp_view.get("/login", endpoint="login")
 def _login():
     return flask.render_template("login.html")
 
+# Render register page
 @bp_view.get("/register", endpoint="register")
 def _register():
     return flask.render_template("register.html")
 
-#TODO(junyu): do not rely on specific date format, and it should be handled in the front end
+# Utility: Parse a date string to a datetime.date object
+# TODO: Move date validation to front-end and support more formats
 def __parse_date(s: str) -> datetime.date:
     pieces = re.split(r'\D+', s)
     if len(pieces) == 3:
@@ -56,6 +67,7 @@ def __parse_date(s: str) -> datetime.date:
         return datetime.date(year, month, day)
     return datetime.datetime.now().date()
 
+# Handle user registration via POST /api/register
 @bp_api.post("/register")
 @util.route_check_csrf
 def _bp_api_register():
@@ -91,6 +103,7 @@ def _bp_api_register():
 
     return flask.jsonify({"succeed": succeed, "message": message})
 
+# Handle user login via POST /api/login
 @bp_api.post("/login")
 @util.route_check_csrf
 def _bp_api_login():
@@ -115,6 +128,7 @@ def _bp_api_login():
 
     return util.make_json_response(succeed)
 
+# Handle logout via POST /api/logout
 @bp_api.post("/logout")
 @util.route_check_csrf
 def _bp_api_logout():

@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Registration form section -->
 <section class="py-5">
   <div class="container">
     <h2 class="text-center mb-5 fw-bold">Create Your Account</h2>
+    <!-- Centered registration form card -->
     <div class="row justify-content-center">
       <div class="col-md-6">
         <div class="card p-4 shadow-sm">
@@ -33,6 +35,7 @@
 {% endblock %}
 
 {% block script %}
+<!-- Handle registration form submission using jQuery and AJAX -->
 <script type="module">
 import { jsonApiPost } from "/static/js/util.js";
 $(function() {

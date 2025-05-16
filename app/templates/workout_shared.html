@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Main content container -->
 <div class="container py-5">
   <h2 class="fw-bold mb-4">Records Shared With Me</h2>
 
+  <!-- Table for displaying shared workout records -->
   <table class="table table-bordered" id="shared-table">
     <thead class="table-light">
       <tr>
@@ -19,8 +21,10 @@
 {% endblock %}
 
 {% block script %}
+<!-- JavaScript for loading and displaying shared records -->
 <script type="text/javascript">
 $(function () {
+  // Fetch shared workout records via AJAX
   $.getJSON("/api/workout/record/shared-with-me").done(function (data) {
     if (!data.succeed) return;
 

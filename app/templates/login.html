@@ -1,23 +1,29 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Login page section -->
 <section class="py-5">
   <div class="container">
     <h2 class="text-center mb-5 fw-bold">Welcome Back</h2>
+    <!-- Centered login card -->
     <div class="row justify-content-center">
       <div class="col-md-6">
         <div class="card p-4 shadow-sm">
+           <!-- Username input field -->
           <div class="mb-3">
             <label class="form-label">User Name</label>
             <input id="login-username" type="text" class="form-control" placeholder="Enter your user name" required>
           </div>
+          <!-- Password input field -->
           <div class="mb-3">
             <label class="form-label">Password</label>
             <input id="login-password" type="password" class="form-control" placeholder="Enter your password" required>
           </div>
+           <!-- Login button -->
           <div class="d-grid gap-2">
             <button id="login-submit" class="btn btn-success btn-lg">Login</button>
           </div>
+          <!-- Sign-up link -->
           <p class="text-center mt-3">
             Don't have an account? <a href="/user/register" class="text-success">Sign Up</a>
           </p>
@@ -29,6 +35,7 @@
 {% endblock %}
 
 {% block script %}
+<!-- JavaScript module to handle login -->
 <script type="module">
 import { jsonApiPost } from "/static/js/util.js";
 $(function() {
@@ -37,6 +44,7 @@ $(function() {
             username: $("#login-username").val(),
             password: $("#login-password").val(),
         }).done(function(data) {
+            // If login is successful, redirect to homepage
             if (data.succeed)
                 window.location.replace("/");
         });
