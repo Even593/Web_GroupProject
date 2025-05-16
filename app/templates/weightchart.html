@@ -3,6 +3,7 @@
 {% block content %}
     <div class="container py-5">
         <h2 class="mb-4">Weight Analysis</h2>
+        
         <!-- Summary cards showing record count, average, min, and max -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -49,23 +50,29 @@
     jsonApiGet("/api/weightchart/data")
       .done(function(json) {
         if (!json.series || !json.series.length) return;
+
         // Extract labels (dates), weight and BMI values
         const labels     = json.series.map(p => p[0]);
         const weightData = json.series.map(p => p[1]);
         const bmiData    = json.series.map(p => p[2]);
+
         // Calculate summary statistics
         const totalCount = weightData.length;
         const avgWeight  = totalCount ? (weightData.reduce((sum, w) => sum + w, 0) / totalCount).toFixed(1) : '—';
         const minWeight  = totalCount ? Math.min(...weightData).toFixed(1) : '—';
         const maxWeight  = totalCount ? Math.max(...weightData).toFixed(1) : '—';
+
         // cards
         $("#wa-count").text(totalCount);
         $("#wa-avg").text(avgWeight);
         $("#wa-min").text(minWeight);
         $("#wa-max").text(maxWeight);
+
+
         // Healthy BMI range lines
         const lowerBound = labels.map(() => 18.5);
         const upperBound = labels.map(() => 24.9);
+
         // Render Chart.js line chart
         new Chart(
           document.getElementById("wa-chart"),

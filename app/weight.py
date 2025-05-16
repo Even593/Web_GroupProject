@@ -68,6 +68,7 @@ def _view_export_pdf():
         pdf.cell(50, 10, str(weight), border=1)
         pdf.ln()
 
+    # this is how fpdf write to the export file in python 3
     content = pdf.output(dest="S").encode("latin1")
     headers = {"Content-Disposition": "attachment; filename=records.pdf"}
     return flask.Response(content, mimetype="application/pdf", headers=headers)
