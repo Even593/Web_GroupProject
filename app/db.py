@@ -145,3 +145,46 @@ def handle_api_delete(model: __ModelClass, req: flask.Request) -> str:
     db.session.execute(sa.delete(model).where(model.id.in_(ids)))
     db.session.commit()
     return __make_response(True, None, None)
+
+# Mock data insertion for development and testing purposes
+# Call this function to populate the database with sample users, weight records, and workout records.
+def insert_mock_data():
+    from .account import Account
+    from .workout import WorkoutRecord
+    from .db import WeightRecord
+    import datetime
+
+    # Create sample users
+    user1 = Account(name="alice", email="alice@example.com", password="hashedpassword1", gender=1, birthdate=datetime.date(1995, 5, 1))
+    user2 = Account(name="bob", email="bob@example.com", password="hashedpassword2", gender=1, birthdate=datetime.date(1990, 8, 15))
+    user3 = Account(name="carol", email="carol@example.com", password="hashedpassword3", gender=2, birthdate=datetime.date(1998, 12, 20))
+    db.session.add_all([user1, user2, user3])
+    db.session.commit()
+
+    # Add weight records for users
+    weight_records = [
+        WeightRecord(user_id=user1.id, record_date=datetime.date(2025, 5, 10), weight_kg=60.5),
+        WeightRecord(user_id=user1.id, record_date=datetime.date(2025, 5, 15), weight_kg=60.0),
+        WeightRecord(user_id=user2.id, record_date=datetime.date(2025, 5, 12), weight_kg=75.2),
+        WeightRecord(user_id=user3.id, record_date=datetime.date(2025, 5, 14), weight_kg=55.8),
+    ]
+    db.session.add_all(weight_records)
+    db.session.commit()
+
+    # Add workout records for users
+    workout_records = [
+        WorkoutRecord(uid=user1.id, date=datetime.date(2025, 5, 10), notes="Morning run", duration=30, calories=250),
+        WorkoutRecord(uid=user1.id, date=datetime.date(2025, 5, 12), notes="Yoga session", duration=45, calories=180),
+        WorkoutRecord(uid=user2.id, date=datetime.date(2025, 5, 11), notes="Cycling", duration=60, calories=400),
+        WorkoutRecord(uid=user3.id, date=datetime.date(2025, 5, 13), notes="Swimming", duration=50, calories=350),
+    ]
+    db.session.add_all(workout_records)
+    db.session.commit()
+
+    # Add a shared workout example
+    from .db import SharedWorkout
+    shared = SharedWorkout(from_user_id=user1.id, to_user_id=user2.id, record_id=workout_records[0].id)
+    db.session.add(shared)
+    db.session.commit()
+
+    print("Mock data inserted successfully.")
