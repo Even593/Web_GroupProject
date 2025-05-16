@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-bold mb-4">Private Messages</h2>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card p-3">
+        <h5>Friends</h5>
+        <ul class="list-group" id="friend-list">
+          {% for friend in friends %}
+          <li class="list-group-item friend-item" data-friend-id="{{ friend.id }}">{{ friend.name }}</li>
+          {% else %}
+          <li class="list-group-item">No conversations yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="card p-3">
+        <h5 id="chat-title">Select a friend to chat</h5>
+        <div id="chat-box" style="height:300px; overflow-y:auto; background:#f8f9fa; margin-bottom:1rem;"></div>
+        <form id="send-message-form" class="d-flex">
+          <input type="text" class="form-control me-2" id="message-content" placeholder="Type a message..." required>
+          <button type="submit" class="btn btn-success">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script type="module">
+import { jsonApiPost, jsonApiGet } from "/static/js/util.js";
+let currentFriendId = null;
+function loadMessages(friendId) {
+    jsonApiGet(`/api/user/messages?friend_id=${friendId}`).done(function(data) {
+        if (!data.succeed) return;
+        const $box = $("#chat-box");
+        $box.empty();
+        data.messages.forEach(msg => {
+            const align = msg.is_me ? 'text-end' : 'text-start';
+            $box.append(`<div class='${align}'><span class='badge bg-${msg.is_me ? 'success' : 'secondary'}'>${msg.content}</span><small class='text-muted ms-2'>${msg.sent_at}</small></div>`);
+        });
+        $box.scrollTop($box[0].scrollHeight);
+    });
+}
+$(function() {
+    $(".friend-item").on("click", function() {
+        currentFriendId = $(this).data("friend-id");
+        $("#chat-title").text("Chat with " + $(this).text());
+        loadMessages(currentFriendId);
+    });
+    $("#send-message-form").on("submit", function(e) {
+        e.preventDefault();
+        if (!currentFriendId) return;
+        const content = $("#message-content").val();
+        jsonApiPost("/api/user/send-message", { receiver_id: currentFriendId, content }).done(function(data) {
+            if (data.succeed) {
+                $("#message-content").val("");
+                loadMessages(currentFriendId);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

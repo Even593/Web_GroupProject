@@ -52,6 +52,36 @@ class Friendship(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     # This table represents a mutual friendship (both users must add each other)
 
+# Table to store private messages between friends
+class PrivateMessage(db.Model):
+    __tablename__ = "private_message"
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    sent_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    is_read = db.Column(db.Boolean, default=False)
+    # This table stores private messages between friends
+
+# Table to store comments on workout records
+class WorkoutComment(db.Model):
+    __tablename__ = "workout_comment"
+    id = db.Column(db.Integer, primary_key=True)
+    record_id = db.Column(db.Integer, db.ForeignKey("workout_record.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    # This table stores comments on workout records
+
+# Table to store likes on workout records
+class WorkoutLike(db.Model):
+    __tablename__ = "workout_like"
+    id = db.Column(db.Integer, primary_key=True)
+    record_id = db.Column(db.Integer, db.ForeignKey("workout_record.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    # This table stores likes on workout records
+
 __ModelClass = typing.Type[BaseModel]
 
 # Incoming request data conversion (JSON -> Python)

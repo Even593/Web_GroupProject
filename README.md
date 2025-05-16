@@ -11,6 +11,10 @@
 - **Workout Sharing**: Selectively share workout records with other registered users  
 - **Profile Page**: Display user information including username, gender, birthdate  
 - **PDF Export Support** for weight tracking logs  
+- **Mutual Friend System**: Add and remove friends with mutual following (like Strava)  
+- **Private Messaging**: Send and receive private messages between friends  
+- **Friends' Workout Feed (Circle)**: View all workout records from mutual friends, similar to a social feed  
+- **Comments and Likes**: Comment on and like friends' workout records  
 - **Backend Design** using modular Flask Blueprints, SQLAlchemy models, and utility wrappers for security  
 
 The application uses:

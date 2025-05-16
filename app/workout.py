@@ -93,3 +93,102 @@ def shared_with_me():
         })
 
     return flask.jsonify({"succeed": True, "result": result})
+
+# Route: GET /workout/friends-feed → Render the friends' workout feed page
+@bp_view.get("/friends-feed")
+@util.route_check_login
+def view_friends_feed():
+    """
+    Render the workout feed page showing all workouts from mutual friends.
+    """
+    return flask.render_template("workout_feed.html")
+
+# Route: GET /api/workout/friends-feed → Get all workouts from mutual friends
+@bp_api.get("/friends-feed")
+@util.route_check_csrf
+def api_friends_feed():
+    from . import db
+    user = flask.g.user
+    # Get all mutual friends
+    friend_ids = db.db.session.query(db.Friendship.friend_id).filter(db.Friendship.user_id == user.id).all()
+    friend_ids = [fid for fid, in friend_ids]
+    # Only show mutual friends (both directions)
+    mutual_ids = [fid for fid in friend_ids if db.db.session.query(db.Friendship).filter_by(user_id=fid, friend_id=user.id).first()]
+    # Query all workout records from mutual friends
+    from .workout import WorkoutRecord
+    records = db.db.session.query(WorkoutRecord).filter(WorkoutRecord.uid.in_(mutual_ids)).order_by(WorkoutRecord.date.desc()).all()
+    result = []
+    for r in records:
+        result.append({
+            "id": r.id,
+            "user_id": r.uid,
+            "date": r.date.strftime("%Y-%m-%d"),
+            "duration": r.duration,
+            "calories": r.calories,
+            "notes": r.notes
+        })
+    return flask.jsonify({"succeed": True, "result": result})
+
+# Route: GET /api/workout/comments → Get comments for a workout record
+@bp_api.get("/comments")
+@util.route_check_csrf
+def api_get_comments():
+    from . import db
+    record_id = flask.request.args.get("record_id", type=int)
+    if not record_id:
+        return flask.jsonify({"succeed": False, "comments": []})
+    comments = db.db.session.query(db.WorkoutComment).filter_by(record_id=record_id).order_by(db.WorkoutComment.created_at.asc()).all()
+    result = [
+        {
+            "user_id": c.user_id,
+            "content": c.content,
+            "created_at": c.created_at.strftime("%Y-%m-%d %H:%M")
+        } for c in comments
+    ]
+    return flask.jsonify({"succeed": True, "comments": result})
+
+# Route: POST /api/workout/comment → Add a comment to a workout record
+@bp_api.post("/comment")
+@util.route_check_csrf
+def api_add_comment():
+    from . import db
+    user = flask.g.user
+    params = flask.request.get_json(silent=True)
+    record_id = params.get("record_id")
+    content = params.get("content")
+    if not record_id or not content:
+        return flask.jsonify({"succeed": False})
+    comment = db.WorkoutComment(record_id=record_id, user_id=user.id, content=content)
+    db.db.session.add(comment)
+    db.db.session.commit()
+    return flask.jsonify({"succeed": True})
+
+# Route: GET /api/workout/likes → Get like count for a workout record
+@bp_api.get("/likes")
+@util.route_check_csrf
+def api_get_likes():
+    from . import db
+    record_id = flask.request.args.get("record_id", type=int)
+    if not record_id:
+        return flask.jsonify({"succeed": False, "count": 0})
+    count = db.db.session.query(db.WorkoutLike).filter_by(record_id=record_id).count()
+    return flask.jsonify({"succeed": True, "count": count})
+
+# Route: POST /api/workout/like → Like a workout record
+@bp_api.post("/like")
+@util.route_check_csrf
+def api_like():
+    from . import db
+    user = flask.g.user
+    params = flask.request.get_json(silent=True)
+    record_id = params.get("record_id")
+    if not record_id:
+        return flask.jsonify({"succeed": False})
+    # Prevent duplicate likes by the same user
+    exists = db.db.session.query(db.WorkoutLike).filter_by(record_id=record_id, user_id=user.id).first()
+    if exists:
+        return flask.jsonify({"succeed": False, "message": "Already liked"})
+    like = db.WorkoutLike(record_id=record_id, user_id=user.id)
+    db.db.session.add(like)
+    db.db.session.commit()
+    return flask.jsonify({"succeed": True})

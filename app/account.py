@@ -185,3 +185,52 @@ def api_remove_friend():
     ).delete(synchronize_session=False)
     db.db.session.commit()
     return flask.jsonify({"succeed": True})
+
+# API endpoint to get messages with a friend
+@bp_api.get("/messages")
+@util.route_check_csrf
+def api_get_messages():
+    """
+    Get all messages between the current user and a friend.
+    """
+    from . import db
+    user = util.get_current_user()
+    friend_id = flask.request.args.get("friend_id", type=int)
+    if not friend_id:
+        return flask.jsonify({"succeed": False, "messages": []})
+    msgs = db.db.session.query(db.PrivateMessage).filter(
+        ((db.PrivateMessage.sender_id == user.id) & (db.PrivateMessage.receiver_id == friend_id)) |
+        ((db.PrivateMessage.sender_id == friend_id) & (db.PrivateMessage.receiver_id == user.id))
+    ).order_by(db.PrivateMessage.sent_at.asc()).all()
+    result = [
+        {
+            "content": m.content,
+            "sent_at": m.sent_at.strftime("%Y-%m-%d %H:%M"),
+            "is_me": m.sender_id == user.id
+        } for m in msgs
+    ]
+    return flask.jsonify({"succeed": True, "messages": result})
+
+# API endpoint to send a private message
+@bp_api.post("/send-message")
+@util.route_check_csrf
+def api_send_message():
+    """
+    Send a private message to a friend.
+    """
+    from . import db
+    user = util.get_current_user()
+    params = flask.request.get_json(silent=True)
+    receiver_id = params.get("receiver_id")
+    content = params.get("content")
+    if not receiver_id or not content:
+        return flask.jsonify({"succeed": False})
+    # Only allow sending to friends
+    is_friend = db.db.session.query(db.Friendship).filter_by(user_id=user.id, friend_id=receiver_id).first() and \
+                db.db.session.query(db.Friendship).filter_by(user_id=receiver_id, friend_id=user.id).first()
+    if not is_friend:
+        return flask.jsonify({"succeed": False, "message": "Not friends"})
+    msg = db.PrivateMessage(sender_id=user.id, receiver_id=receiver_id, content=content)
+    db.db.session.add(msg)
+    db.db.session.commit()
+    return flask.jsonify({"succeed": True})

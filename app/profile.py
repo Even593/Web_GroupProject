@@ -32,3 +32,21 @@ def view_friends():
         from .account import Account
         friends = db.db.session.query(Account).filter(Account.id.in_(friendships)).all()
     return render_template("friends.html", friends=friends)
+
+# Route: GET /profile/messages
+# This view renders the private message page for the current user
+@bp_view.get("/messages", endpoint="messages")
+@util.route_check_login
+def view_messages():
+    """
+    Render the private messages page for the current user.
+    """
+    from . import db
+    user_id = util.get_current_user().id
+    # Query all conversations (distinct friend ids)
+    sent = db.db.session.query(db.PrivateMessage.receiver_id).filter(db.PrivateMessage.sender_id == user_id)
+    received = db.db.session.query(db.PrivateMessage.sender_id).filter(db.PrivateMessage.receiver_id == user_id)
+    friend_ids = set([fid for fid, in sent] + [fid for fid, in received])
+    from .account import Account
+    friends = db.db.session.query(Account).filter(Account.id.in_(friend_ids)).all() if friend_ids else []
+    return render_template("messages.html", friends=friends)
