@@ -16,16 +16,16 @@
                 <form method="POST" action="/weight/submit">
                     {{ form.hidden_tag() }}
                     <div class="mb-3">
-                        {{ form.record_date.label(class="form-label") }}
-                        {{ form.record_date(class="form-control") }}
+                        {{ form.date.label(class="form-label") }}
+                        {{ form.date(class="form-control") }}
                     </div>
                     <div class="mb-3">
-                        {{ form.weight_kg.label(class="form-label") }}
-                        {{ form.weight_kg(class="form-control") }}
+                        {{ form.weight.label(class="form-label") }}
+                        {{ form.weight(class="form-control") }}
                     </div>
                     {{ form.submit(class="btn btn-primary") }}
-                    <a href="{{ export_url }}" class="btn btn-secondary ms-3">Export to PDF</a>
-                    <a href="{{ url_for('weightchart_view.view_weight_analysis') }}" class="btn btn-info ms-3">View Chart</a>
+                    <a href="/weight/export" class="btn btn-secondary ms-3">Export to PDF</a>
+                    <a href="/weightchart" class="btn btn-info ms-3">View Chart</a>
                 </form>
             </div>
         </div>
@@ -49,8 +49,8 @@
                     <tbody>
                     {% for record in records %}
                         <tr>
-                            <td>{{ record.record_date }}</td>
-                            <td>{{ record.weight_kg }}</td>
+                            <td>{{ record.date }}</td>
+                            <td>{{ record.weight }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
