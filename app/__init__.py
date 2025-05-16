@@ -9,6 +9,7 @@ def create_app(config_name: str = "development") -> flask.Flask:
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or "dev"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
     db.db.init_app(app)
+    db.migration.init_app(app, db.db)
 
     from . import account
     from . import weight
