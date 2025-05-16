@@ -1,8 +1,21 @@
 import flask
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def create_app(config_name: str = "development") -> flask.Flask:
 
+=======
+# def create_app() -> flask.Flask:
+#     from . import db
+#     api = flask.Blueprint("api", __name__, url_prefix="/api")
+#     app = flask.Flask(__name__)
+#     app.config["SECRET_KEY"] = "dev"
+#     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+#     db.db.init_app(app)
+
+def create_app(config_name: str = "development") -> flask.Flask:
+
+>>>>>>> Stashed changes
 =======
 # def create_app() -> flask.Flask:
 #     from . import db

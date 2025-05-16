@@ -143,6 +143,10 @@ def api_add_friend():
     try:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        from . import db
+>>>>>>> Stashed changes
 =======
         from . import db
 >>>>>>> Stashed changes
