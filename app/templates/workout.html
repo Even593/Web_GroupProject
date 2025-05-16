@@ -83,7 +83,7 @@ $(function() {
           <td>${item.calories} cal</td>
           <td><div class="col-20 text-truncate">${item.notes}</div></td>
           <td>
-            <button onclick="shareWorkout(${item.id})" class="btn btn-outline-success btn-sm">Share</button>
+            <button class="btn btn-primary btn-sm""><i class="bi bi-share"></i></button>
             <button class="btn btn-secondary btn-sm""><i class="bi bi-trash"></i></button>
             </td>
           </tr>`);
@@ -100,7 +100,11 @@ $(function() {
         else
             $table.find(`> tr:nth-child(${idx})`).after($row);
 
-        $row.find(".btn-secondary").on("click", function() {
+        const buttons = $row.find("button");
+        buttons.first().on("click", function() {
+            shareWorkout(id);
+        });
+        buttons.last().on("click", function() {
             jsonApiPost("/api/workout/record/delete", { ids: [id] }).done(function(data) {
                 if (data.succeed)
                     $row.remove();
