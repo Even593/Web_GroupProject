@@ -81,4 +81,3 @@ def _export_pdf():
     print(f"PDF saved at: {pdf_path}")
 
     return send_file(pdf_path, as_attachment=True)
-

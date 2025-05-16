@@ -1,5 +1,13 @@
+<<<<<<< HEAD
+import datetime
+import flask
+import sqlalchemy as sa
+import sqlalchemy.orm as sa_orm
+from . import db, util, user
+=======
 import flask
 from . import db, util
+>>>>>>> master
 from .db import WeightRecord
 
 bp_view, bp_api = util.make_module_blueprints("weightchart")
@@ -24,8 +32,13 @@ def summarize_weights(records):
         "max": max(weights)
     }
 
+<<<<<<< HEAD
+@user.route_to_login_if_required
+@bp_view.get("/")
+=======
 @bp_view.get("/")
 @util.route_check_login
+>>>>>>> master
 def view_weight_analysis():
     return flask.render_template("weightchart.html")
 

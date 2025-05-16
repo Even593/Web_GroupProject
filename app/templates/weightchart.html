@@ -3,8 +3,12 @@
 {% block content %}
     <div class="container py-5">
         <h2 class="mb-4">Weight Analysis</h2>
+<<<<<<< HEAD
+
+=======
         
         <!-- Summary cards showing record count, average, min, and max -->
+>>>>>>> master
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="card text-center p-3">
@@ -31,7 +35,11 @@
                 </div>
             </div>
         </div>
+<<<<<<< HEAD
+
+=======
         <!-- Chart section -->
+>>>>>>> master
         <div class="card p-4 mb-4">
             <h5 class="mb-3">Weight Over Time</h5>
             <canvas id="wa-chart"></canvas>
@@ -40,22 +48,34 @@
 {% endblock %}
 
 {% block script %}
+<<<<<<< HEAD
+=======
 <!-- Import jQuery and Chart.js -->
+>>>>>>> master
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   $(function() {
+<<<<<<< HEAD
+=======
     // Fetch weight & BMI data from backend endpoint
+>>>>>>> master
     $.getJSON("/weightchart/data")
       .done(function(json) {
         if (!json.series || !json.series.length) return;
 
+<<<<<<< HEAD
+=======
         // Extract labels (dates), weight and BMI values
+>>>>>>> master
         const labels     = json.series.map(p => p[0]);
         const weightData = json.series.map(p => p[1]);
         const bmiData    = json.series.map(p => p[2]);
 
+<<<<<<< HEAD
+=======
         // Calculate summary statistics
+>>>>>>> master
         const totalCount = weightData.length;
         const avgWeight  = totalCount ? (weightData.reduce((sum, w) => sum + w, 0) / totalCount).toFixed(1) : '—';
         const minWeight  = totalCount ? Math.min(...weightData).toFixed(1) : '—';
@@ -72,7 +92,10 @@
         const lowerBound = labels.map(() => 18.5);
         const upperBound = labels.map(() => 24.9);
 
+<<<<<<< HEAD
+=======
         // Render Chart.js line chart
+>>>>>>> master
         new Chart(
           document.getElementById("wa-chart"),
           {
