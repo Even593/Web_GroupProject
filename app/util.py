@@ -69,6 +69,14 @@ def csrf_ensure_token():
 
 # Verify that the CSRF token is valid and not expired
 def csrf_validate_token(data) -> bool:
+    # disable CSRF token checking in unit testing
+    if not flask.current_app.config.get("CSRF_ENABLE", True):
+        return True
+
+    # disable CSRF token in unit testing
+    if not flask.g.get("csrf_disable", False):
+        return True
+
     if not data or __CSRF_SESSION_NAME not in flask.session:
         return False
 

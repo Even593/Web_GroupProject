@@ -1,7 +1,7 @@
 import datetime
 import unittest
 from app import create_app, db
-from app.user import Account, Gender
+from app.account import Account, Gender
 
 class ModelTestCase(unittest.TestCase):
     def setUp(self):
@@ -17,7 +17,7 @@ class ModelTestCase(unittest.TestCase):
 
     def test_account_creation(self):
         # new acc
-        u = Account(name='alice', password='pass123', gender=Gender.FEMALE, birthdate= datetime.date.today())
+        u = Account(name='alice', password='pass123', gender=Gender.FEMALE, email='foo@gmail.com', birthdate= datetime.date.today())
         db.db.session.add(u)
         db.db.session.commit()
 
@@ -26,12 +26,12 @@ class ModelTestCase(unittest.TestCase):
         self.assertEqual(fetched.gender, Gender.FEMALE)
 
     def test_unique_username(self):
-        u1 = Account(name='sam', password='p', gender=Gender.UNKNOWN, birthdate=datetime.date.today())
+        u1 = Account(name='sam', password='p', gender=Gender.UNKNOWN, email='foo@gmail.com', birthdate=datetime.date.today())
         db.db.session.add(u1)
         db.db.session.commit()
 
         # submit same acc name
-        u2 = Account(name='sam', password='p2', gender=Gender.UNKNOWN, birthdate=datetime.date.today())
+        u2 = Account(name='sam', password='p2', gender=Gender.UNKNOWN, email='foo@gmail.com', birthdate=datetime.date.today())
         db.db.session.add(u2)
         with self.assertRaises(Exception):
             db.db.session.commit()

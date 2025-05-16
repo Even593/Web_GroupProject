@@ -1,13 +1,15 @@
 import flask
 
 def create_app(config_name: str = "development") -> flask.Flask:
-    import os
-    from . import db
 
+    from . import db
     api = flask.Blueprint("api", __name__, url_prefix="/api")
     app = flask.Flask(__name__)
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or "dev"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+    from tests.unit.config import config_mapping
+    config_class = config_mapping.get(config_name)
+    if config_class is None:
+        raise ValueError(f"Unknown config name '{config_name}'")
+    app.config.from_object(config_class)
     db.db.init_app(app)
     db.migration.init_app(app, db.db)
 
