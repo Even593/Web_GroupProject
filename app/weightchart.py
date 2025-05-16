@@ -1,6 +1,7 @@
 import flask
-from . import db, util
-from .db import WeightRecord
+from . import db
+from . import util
+from . import weight
 
 bp_view, bp_api = util.make_module_blueprints("weightchart")
 bp_view.name = "weightchart_view"
@@ -31,15 +32,16 @@ def view_weight_analysis():
 
 @bp_api.get("/data")
 def api_weight_analysis_data():
-    user_id = flask.g.user._id
+    uid = util.get_current_user().id
     session = db.db.session
-    qs = session.query(WeightRecord).filter(WeightRecord.user_id == user_id).order_by(WeightRecord.record_date)
+    qs = session.query(weight.WeightRecord)\
+        .filter(weight.WeightRecord.uid == uid)\
+        .order_by(weight.WeightRecord.date)
     records = qs.all()
     height = 1.75
     series = []
     for rec in records:
-        date = rec.record_date.isoformat()
-        weight = rec.weight_kg
-        bmi = round(weight / (height ** 2), 1)
-        series.append([date, weight, bmi])
+        date = rec.date.isoformat()
+        bmi = round(rec.weight / (height ** 2), 1)
+        series.append([date, rec.weight, bmi])
     return flask.jsonify({"series": series})

@@ -30,13 +30,6 @@ else:
 class UidMixin:
     uid: sa_orm.Mapped[int] = sa_orm.mapped_column(sa.ForeignKey("account.id", ondelete="CASCADE"))
 
-# Table to store user weight records
-class WeightRecord(db.Model):
-    user_id = db.Column(db.Integer, nullable=False)
-    record_date = db.Column(db.Date, nullable=False)
-    weight_kg = db.Column(db.Float, nullable=False)
-
-# Table to track workout records shared between users    
 class SharedWorkout(db.Model):
     __tablename__ = "shared_workout"
     from_user_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)

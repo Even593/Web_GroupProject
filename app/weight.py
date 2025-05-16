@@ -1,61 +1,55 @@
-import os
-import typing
-
-import flask
-from flask import Blueprint, render_template, redirect, url_for, request, flash, send_file
 from . import db
-from . import account
 from . import util
-from .db import WeightRecord
 
-bp_view, bp_api = util.make_module_blueprints("weight")
+import datetime
 
-@bp_view.get("/", endpoint="/")
-def _index():
+import fpdf
+import flask
+import flask_wtf
+import wtforms.validators
+
+import sqlalchemy as sa
+import sqlalchemy.orm as sa_orm
+
+bp_view = flask.Blueprint("weight", __name__, url_prefix="/weight")
+
+class WeightForm(flask_wtf.FlaskForm):
+    date = wtforms.DateField("Date", validators=[wtforms.validators.DataRequired()])
+    weight = wtforms.FloatField("Weight (kg)", validators=[wtforms.validators.DataRequired()])
+    submit = wtforms.SubmitField("Add Record")
+
+class WeightRecord(db.UidMixin, db.BaseModel):
+    date: sa_orm.Mapped[datetime.date] = sa_orm.mapped_column(sa.Date)
+    weight: sa_orm.Mapped[float] = sa_orm.mapped_column(sa.Float)
+
+@bp_view.get("/", endpoint="")
+@util.route_check_login
+def _view_index():
     form = WeightForm()
-    weight_records = WeightRecord.query.filter_by(user_id=util.get_current_user().id).all()
-    return render_template("weight.html", form=form, records=weight_records, export_url=url_for("weight.export_pdf"))
-
+    stmt = sa.select(WeightRecord).where(WeightRecord.uid == util.get_current_user().id)
+    records = db.db.session.scalars(stmt)
+    return flask.render_template("weight.html", form=form, records=records)
 
 @bp_view.post("/submit", endpoint="submit")
+@util.route_check_login
 def _form():
     form = WeightForm()
 
     if form.validate_on_submit():
         new_record = WeightRecord(
-            user_id=util.get_current_user().id,
-            record_date=form.record_date.data,
-            weight_kg=form.weight_kg.data
+            uid=util.get_current_user().id,
+            date=form.date.data,
+            weight=form.weight.data
         )
         db.db.session.add(new_record)
         db.db.session.commit()
-    return redirect(url_for("weight./"))
+    return flask.redirect(flask.url_for("weight."))
 
-def ___index():
-    from .forms import WeightForm
-    form = WeightForm()
+@bp_view.get("/export", endpoint="export")
+@util.route_check_login
+def _view_export_pdf():
 
-    if form.validate_on_submit():
-        new_record = WeightRecord(
-            user_id=util.get_current_user().id,
-            record_date=form.record_date.data,
-            weight_kg=form.weight_kg.data
-        )
-        db.db.session.add(new_record)
-        db.db.session.commit()
-        return redirect(url_for("weight.index"))
-
-    #weight_records = WeightRecord.query.all()
-    weight_records = WeightRecord.query.filter_by(user_id=util.get_current_user().id).all()
-
-    return render_template("weight.html", form=form, records=weight_records, export_url=url_for("weight.export_pdf"))
-
-@bp_view.get("/export_pdf", endpoint="export_pdf")
-def _export_pdf():
-    from fpdf import FPDF
-    weight_records = WeightRecord.query.all()
-
-    pdf = FPDF()
+    pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.set_font("Arial", "B", 16)
     pdf.cell(200, 10, "Weight Records", ln=True, align="C")
@@ -66,19 +60,15 @@ def _export_pdf():
     pdf.ln()
 
     pdf.set_font("Arial", "", 12)
-    for record in weight_records:
-        pdf.cell(50, 10, str(record.record_date), border=1)
-        pdf.cell(50, 10, str(record.weight_kg), border=1)
+
+    stmt = sa.select(WeightRecord.date, WeightRecord.weight)\
+        .where(WeightRecord.uid == util.get_current_user().id)
+    for date, weight in db.db.session.execute(stmt).yield_per(100):
+        pdf.cell(50, 10, str(date), border=1)
+        pdf.cell(50, 10, str(weight), border=1)
         pdf.ln()
 
-    output_dir = os.path.join(os.getcwd(), "instance", "pdf files")
-    os.makedirs(output_dir, exist_ok=True)  # create folder
-
-    pdf_path = os.path.join(output_dir, "weight_records.pdf")
-
-    pdf.output(pdf_path)
-    #generate file
-    print(f"PDF saved at: {pdf_path}")
-
-    return send_file(pdf_path, as_attachment=True)
-
+    # this is how fpdf write to the export file in python 3
+    content = pdf.output(dest="S").encode("latin1")
+    headers = {"Content-Disposition": "attachment; filename=records.pdf"}
+    return flask.Response(content, mimetype="application/pdf", headers=headers)
