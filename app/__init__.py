@@ -1,19 +1,12 @@
 import flask
 
-# def create_app() -> flask.Flask:
-#     from . import db
-#     api = flask.Blueprint("api", __name__, url_prefix="/api")
-#     app = flask.Flask(__name__)
-#     app.config["SECRET_KEY"] = "dev"
-#     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
-#     db.db.init_app(app)
-
 def create_app(config_name: str = "development") -> flask.Flask:
-
+    import os
     from . import db
+
     api = flask.Blueprint("api", __name__, url_prefix="/api")
     app = flask.Flask(__name__)
-    app.config["SECRET_KEY"] = "dev"
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or "dev"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
     db.db.init_app(app)
 
