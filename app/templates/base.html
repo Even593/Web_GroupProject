@@ -40,9 +40,7 @@
         <span class="nav-link text-success fw-bold">👤 {{ g.user.name }}</span>
       </li>
       <li class="nav-item mx-2">
-        <form id="logout-form" style="display:inline;" method="post" action="/api/user/logout">
-          <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
-        </form>
+        <button id="logout-btn" class="btn btn-outline-danger btn-sm">Logout</button>
       </li>
       {% else %}
         {% if request.endpoint != "user.login" %}
@@ -105,7 +103,7 @@
 <script type="module">
 import { jsonApiPost } from "/static/js/util.js";
 $(function() {
-  $("#logout-form").on("submit", function(e) {
+  $("#logout-btn").on("click", function(e) {
     e.preventDefault();
     jsonApiPost("/api/user/logout", {}).done(function(data) {
       if (data.succeed) {
