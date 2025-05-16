@@ -128,7 +128,7 @@ def _bp_api_login():
 
     return util.make_json_response(succeed)
 
-# Handle logout via POST /api/logout
+# Handle logout via POST /api/user/logout
 @bp_api.post("/logout")
 @util.route_check_csrf
 def _bp_api_logout():

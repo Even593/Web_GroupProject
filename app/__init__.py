@@ -40,6 +40,12 @@ def create_app(config_name: str = "development") -> flask.Flask:
     with app.app_context():
         db.db.create_all()
 
+    # inject CSRF token into all templates via meta tag
+    @app.context_processor
+    def inject_csrf():
+        from .util import csrf_ensure_token
+        return {"csrf_token": csrf_ensure_token()}
+
     @app.route("/", endpoint="/")
     def __index():
         return flask.render_template("index.html")
