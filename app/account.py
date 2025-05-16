@@ -135,3 +135,53 @@ def _bp_api_logout():
     util.set_current_user(None)
     flask.session.clear()
     return json.dumps({"succeed": True})
+
+# API endpoint to add a friend (mutual friendship)
+@bp_api.post("/add-friend")
+@util.route_check_csrf
+def api_add_friend():
+    """
+    Add a friend by username. If both users add each other, friendship is mutual.
+    """
+    from . import db
+    params = flask.request.get_json(silent=True)
+    if not params or not params.get("username"):
+        return flask.jsonify({"succeed": False, "message": "Missing username"})
+    current_user = util.get_current_user()
+    friend = db.db.session.query(Account).filter_by(name=params["username"]).first()
+    if not friend or friend.id == current_user.id:
+        return flask.jsonify({"succeed": False, "message": "User not found or invalid"})
+    # Check if already friends
+    exists = db.db.session.query(db.Friendship).filter_by(user_id=current_user.id, friend_id=friend.id).first()
+    if exists:
+        return flask.jsonify({"succeed": False, "message": "Already friends or pending mutual"})
+    # Add friendship (one direction)
+    db.db.session.add(db.Friendship(user_id=current_user.id, friend_id=friend.id))
+    db.db.session.commit()
+    # Check if the other user also added current user
+    mutual = db.db.session.query(db.Friendship).filter_by(user_id=friend.id, friend_id=current_user.id).first()
+    if mutual:
+        # Optionally, notify both users of mutual friendship
+        pass
+    return flask.jsonify({"succeed": True})
+
+# API endpoint to remove a friend
+@bp_api.post("/remove-friend")
+@util.route_check_csrf
+def api_remove_friend():
+    """
+    Remove a friend by friend_id. Removes both directions if mutual.
+    """
+    from . import db
+    params = flask.request.get_json(silent=True)
+    if not params or not params.get("friend_id"):
+        return flask.jsonify({"succeed": False, "message": "Missing friend_id"})
+    current_user = util.get_current_user()
+    friend_id = params["friend_id"]
+    # Remove both directions
+    db.db.session.query(db.Friendship).filter(
+        ((db.Friendship.user_id == current_user.id) & (db.Friendship.friend_id == friend_id)) |
+        ((db.Friendship.user_id == friend_id) & (db.Friendship.friend_id == current_user.id))
+    ).delete(synchronize_session=False)
+    db.db.session.commit()
+    return flask.jsonify({"succeed": True})

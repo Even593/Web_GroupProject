@@ -44,6 +44,14 @@ class SharedWorkout(db.Model):
     record_id = db.Column(db.Integer, db.ForeignKey("workout_record.id"), nullable=False)
     shared_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
+# Table to store mutual friendship relationships between users
+class Friendship(db.Model):
+    __tablename__ = "friendship"
+    user_id = db.Column(db.Integer, db.ForeignKey("account.id"), primary_key=True)
+    friend_id = db.Column(db.Integer, db.ForeignKey("account.id"), primary_key=True)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    # This table represents a mutual friendship (both users must add each other)
+
 __ModelClass = typing.Type[BaseModel]
 
 # Incoming request data conversion (JSON -> Python)
@@ -185,6 +193,12 @@ def insert_mock_data():
     from .db import SharedWorkout
     shared = SharedWorkout(from_user_id=user1.id, to_user_id=user2.id, record_id=workout_records[0].id)
     db.session.add(shared)
+    db.session.commit()
+
+    # Add friendship examples
+    friendship1 = Friendship(user_id=user1.id, friend_id=user2.id)
+    friendship2 = Friendship(user_id=user2.id, friend_id=user3.id)
+    db.session.add_all([friendship1, friendship2])
     db.session.commit()
 
     print("Mock data inserted successfully.")

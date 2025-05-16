@@ -27,6 +27,12 @@
       <div class="col-md-4 fw-semibold">Birthdate:</div>
       <div class="col-md-8">{{ g.user.birthdate.strftime('%Y-%m-%d') }}</div>
     </div>
+    <div class="row mb-3">
+      <div class="col-md-4 fw-semibold">Friends:</div>
+      <div class="col-md-8">
+        <a href="/profile/friends" class="btn btn-outline-success btn-sm">View Friends</a>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
