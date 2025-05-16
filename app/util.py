@@ -10,24 +10,29 @@ import functools
 import flask
 import itsdangerous
 
+# CSRF configuration constants
 __CSRF_TIME_LIMIT = 3600
 __CSRF_GLOBAL_NAME = "csrf_token"
 __CSRF_SESSION_NAME = "csrf_token"
 __CSRF_HEADER_NAME = "X-CSRFToken"
 
+# Create a pair of Flask Blueprints (view, api) under a given module name
 def make_module_blueprints(name: str) -> tuple[flask.Blueprint, flask.Blueprint]:
     def __make(n: str):
         prefix = "/" + name
         return flask.Blueprint(n, __name__, url_prefix=prefix)
     return __make(name), __make(name)
 
+# Store the currently logged-in user in Flask's request context (g)
 def set_current_user(user):
     flask.g.user = user
 
+# Retrieve the current user from context, cast to Account model
 def get_current_user():
     from . import account
     return typing.cast(account.Account, flask.g.user)
 
+# Decorator to ensure user is logged in; otherwise redirect to login page
 def route_check_login(view: flask.typing.RouteCallable):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
@@ -36,9 +41,11 @@ def route_check_login(view: flask.typing.RouteCallable):
         return view(**kwargs)
     return typing.cast(flask.typing.RouteCallable, wrapped_view)
 
+# Generate a timed serializer for CSRF tokens
 def __csrf_get_serializer():
     return itsdangerous.URLSafeTimedSerializer(flask.current_app.secret_key, salt="wtf-csrf-token")
 
+# Generate or reuse the CSRF token for current session
 def csrf_ensure_token():
     def __make_random_hash():
         return hashlib.sha1(os.urandom(64)).hexdigest()
@@ -60,6 +67,7 @@ def csrf_ensure_token():
 
     return flask.g.get(__CSRF_GLOBAL_NAME)
 
+# Verify that the CSRF token is valid and not expired
 def csrf_validate_token(data) -> bool:
     if not data or __CSRF_SESSION_NAME not in flask.session:
         return False
@@ -72,6 +80,7 @@ def csrf_validate_token(data) -> bool:
     except (itsdangerous.BadData, itsdangerous.SignatureExpired):
         return False
 
+# Decorator to enforce CSRF token validation on API routes
 def route_check_csrf(api: flask.typing.RouteCallable):
     @functools.wraps(api)
     def wrapped_api(**kwargs):
@@ -81,6 +90,7 @@ def route_check_csrf(api: flask.typing.RouteCallable):
         return api(**kwargs)
     return typing.cast(flask.typing.RouteCallable, wrapped_api)
 
+# Utility to create a unified JSON response with 'succeed' status
 def make_json_response(succeed: bool, **kwargs) -> str:
     result = dict()
     result["succeed"] = succeed
