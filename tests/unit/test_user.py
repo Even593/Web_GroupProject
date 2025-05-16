@@ -3,7 +3,7 @@ import unittest
 import datetime
 
 from app import create_app, db
-from app.user import Account, Gender, __parse_date, route_to_login_if_required
+from app.account import Account, Gender
 from flask import g, session, url_for
 
 class UserTestCase(unittest.TestCase):
