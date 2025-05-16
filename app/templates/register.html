@@ -1,15 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Registration form section -->
 <section class="py-5">
   <div class="container">
     <h2 class="text-center mb-5 fw-bold">Create Your Account</h2>
+    <!-- Centered registration form card -->
     <div class="row justify-content-center">
       <div class="col-md-6">
         <div class="card p-4 shadow-sm">
           <div class="mb-3">
             <label class="form-label">User Name</label>
             <input id="register-username" type="text" class="form-control" placeholder="Enter your user name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input id="register-email" type="email" class="form-control" placeholder="Enter your email" required>
           </div>
           <div class="mb-3">
             <label class="form-label">Password</label>
@@ -29,18 +35,15 @@
 {% endblock %}
 
 {% block script %}
-<script type="text/javascript">
+<!-- Handle registration form submission using jQuery and AJAX -->
+<script type="module">
+import { jsonApiPost } from "/static/js/util.js";
 $(function() {
     $("#register-submit").on("click", function() {
-        $.ajax({
-            type: "POST",
-            url: "/api/user/register",
-            data: JSON.stringify({
-                username: $("#register-username").val(),
-                password: $("#register-password").val(),
-            }),
-            dataType: "json",
-            contentType: "application/json",
+        jsonApiPost("/api/user/register", {
+            username: $("#register-username").val(),
+            password: $("#register-password").val(),
+            email: $("#register-email").val(),
         }).done(function(data) {
             if (data.succeed)
                 window.location.replace("/user/login");

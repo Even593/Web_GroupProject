@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-bold mb-4">Friends' Workout Feed</h2>
+  <div id="feed-list"></div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script type="module">
+import { jsonApiGet, jsonApiPost } from "/static/js/util.js";
+function renderFeedItem(item) {
+    return `<div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">User #${item.user_id} | ${item.date}</h5>
+        <p class="card-text">Duration: ${item.duration} min, Calories: ${item.calories} cal</p>
+        <p class="card-text">${item.notes}</p>
+        <div>
+          <button class="btn btn-outline-primary btn-sm comment-btn" data-id="${item.id}">Comment</button>
+          <button class="btn btn-outline-danger btn-sm like-btn" data-id="${item.id}">Like</button>
+        </div>
+        <div class="comments mt-2" id="comments-${item.id}"></div>
+        <div class="likes mt-1" id="likes-${item.id}"></div>
+      </div>
+    </div>`;
+}
+function loadFeed() {
+    jsonApiGet("/api/workout/friends-feed").done(function(data) {
+        if (!data.succeed) return;
+        const $list = $("#feed-list");
+        $list.empty();
+        data.result.forEach(item => {
+            $list.append(renderFeedItem(item));
+            loadComments(item.id);
+            loadLikes(item.id);
+        });
+    });
+}
+function loadComments(recordId) {
+    jsonApiGet(`/api/workout/comments?record_id=${recordId}`).done(function(data) {
+        const $c = $(`#comments-${recordId}`);
+        $c.empty();
+        if (data.succeed && data.comments.length) {
+            data.comments.forEach(c => {
+                $c.append(`<div><b>User #${c.user_id}:</b> ${c.content} <small class='text-muted'>${c.created_at}</small></div>`);
+            });
+        }
+    });
+}
+function loadLikes(recordId) {
+    jsonApiGet(`/api/workout/likes?record_id=${recordId}`).done(function(data) {
+        const $l = $(`#likes-${recordId}`);
+        $l.empty();
+        if (data.succeed && data.count) {
+            $l.append(`<span class='text-danger'>${data.count} likes</span>`);
+        }
+    });
+}
+$(function() {
+    loadFeed();
+    $(document).on("click", ".comment-btn", function() {
+        const recordId = $(this).data("id");
+        const content = prompt("Enter your comment:");
+        if (!content) return;
+        jsonApiPost("/api/workout/comment", { record_id: recordId, content }).done(function(data) {
+            if (data.succeed) loadComments(recordId);
+        });
+    });
+    $(document).on("click", ".like-btn", function() {
+        const recordId = $(this).data("id");
+        jsonApiPost("/api/workout/like", { record_id: recordId }).done(function(data) {
+            if (data.succeed) loadLikes(recordId);
+        });
+    });
+});
+</script>
+{% endblock %}

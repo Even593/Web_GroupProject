@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Main content container -->
 <div class="container py-5">
   <h2 class="fw-bold mb-4">Workout Records</h2>
+
+   <!-- Workout records table -->
   <div class="p-4">
     <table id="workout-table" class="table">
         <thead>
@@ -17,6 +20,8 @@
         <tbody></tbody>
     </table>
   </div>
+
+  <!-- Workout record input form -->
   <div class="card shadow-sm p-4">
     <div class="row mb-4">
       <div class="col-md-3">
@@ -45,8 +50,11 @@
 {% endblock %}
 
 {% block script %}
-<script type="text/javascript">
+<script type="module">
+import { jsonApiGet, jsonApiPost } from "/static/js/util.js";
 $(function() {
+
+    // Binary search to keep workout records sorted by date
     function binarySearch(array, target) {
         let low = 0;
         let high = array.length - 1;
@@ -67,6 +75,7 @@ $(function() {
         return -(low + 1);
     }
 
+    // Insert a workout record row in the table at the correct position
     function insertRow($table, records, dates, id, item) {
         const $row = $(`<tr>
           <td>${item.date}</td>
@@ -74,7 +83,7 @@ $(function() {
           <td>${item.calories} cal</td>
           <td><div class="col-20 text-truncate">${item.notes}</div></td>
           <td>
-            <button onclick="shareWorkout(${item.id})" class="btn btn-outline-success btn-sm">Share</button>
+            <button class="btn btn-primary btn-sm""><i class="bi bi-share"></i></button>
             <button class="btn btn-secondary btn-sm""><i class="bi bi-trash"></i></button>
             </td>
           </tr>`);
@@ -91,17 +100,16 @@ $(function() {
         else
             $table.find(`> tr:nth-child(${idx})`).after($row);
 
-            $row.find(".btn-secondary").on("click", function() {
-                $.ajax({
-                    type: "POST",
-                    url: "/api/workout/record/delete",
-                    data: JSON.stringify({ ids: [id] }),
-                    dataType: "json",
-                    contentType: "application/json",
-                }).done(function(data) {
-                    if (data.succeed) $row.remove();
-                });
+        const buttons = $row.find("button");
+        buttons.first().on("click", function() {
+            shareWorkout(id);
+        });
+        buttons.last().on("click", function() {
+            jsonApiPost("/api/workout/record/delete", { ids: [id] }).done(function(data) {
+                if (data.succeed)
+                    $row.remove();
             });
+        });
     }
 
 
@@ -109,7 +117,8 @@ $(function() {
     const records = [];
     const $table = $("#workout-table > tbody");
 
-    $.getJSON("/api/workout/record/query").done(function(data) {
+    // Load existing workout records
+    jsonApiGet("/api/workout/record/query").done(function(data) {
         if (data.succeed) {
             $.each(data.result, function(idx, record) {
                 insertRow($table, records, dates, record.id, record);
@@ -117,6 +126,7 @@ $(function() {
         }
     });
 
+    // Handle new workout submission
     $("#workout-add").on("click", function() {
         const item = {
             date: $("#workout-form-date").val(),
@@ -125,19 +135,14 @@ $(function() {
             notes: $("#workout-form-notes").val(),
         };
 
-        $.ajax({
-            type: "POST",
-            url: "/api/workout/record/insert",
-            data: JSON.stringify(item),
-            dataType: "json",
-            contentType: "application/json",
-        }).done(function(data) {
+        jsonApiPost("/api/workout/record/insert", item).done(function(data) {
             if (data.succeed)
                 insertRow($table, records, dates, data.ids[0], item);
         });
     });
 });
 
+// Function to share a workout record with another user
 function shareWorkout(record_id) {
     const toUser = prompt("Enter the username to share with:");
     if (!toUser) return;

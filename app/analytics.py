@@ -6,16 +6,20 @@ import datetime
 
 import flask
 
+# Register front-end and API blueprints for "analytics" module
 bp_view, bp_api = util.make_module_blueprints("analytics")
 
+# File path to the activity log CSV
 ACTIVITY_FILE = os.path.join("app", "user_data", "activity_log.csv")
 
+# Read all activity entries from CSV file
 def read_activities():
     if not os.path.isfile(ACTIVITY_FILE):
         return []
     with open(ACTIVITY_FILE, newline="", encoding="utf-8") as csvfile:
         return list(csv.DictReader(csvfile))
 
+# Compute activity summary statistics
 def get_summary():
     activities = read_activities()
     total_distance = 0
@@ -51,6 +55,7 @@ def get_summary():
         "max_cal": int(max_cal)
     }
 
+# Compute activity trend (duration per day) over the past X days
 def get_trend(days=7):
     today = datetime.datetime.today().date()
     history = { (today - datetime.timedelta(days=i)).isoformat(): 0.0 for i in range(days) }
@@ -63,6 +68,7 @@ def get_trend(days=7):
             continue
     return history
 
+# Route: /analytics/ (render front-end dashboard)
 @bp_view.get("/")
 def analytics_dashboard():
     return flask.render_template("analytics.html")

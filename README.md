@@ -2,80 +2,129 @@
 
 ## 1. Purpose and Design
 
-**FitTrack** is a web-based fitness and activity tracking platform that allows users to:
-- Record personal workout logs (duration, calories, notes)
-- View personal statistics and weekly trends
-- Share workout records with specific users (A → B, but not to C)
-- Maintain privacy with user-level filtering
-- Access a personal profile dashboard
+**FitTrack** is a lightweight web-based fitness tracking platform that enables users to manage and analyze their personal workout records. The key design goals are simplicity, user control, and secure data handling.
 
-The application is designed using Flask (Python) with Jinja templates and Bootstrap for frontend, SQLAlchemy for database handling, and Chart.js for analytics visualisation.
+### Core Features:
+- **User Account System** with secure login, password hashing, and CSRF protection  
+- **Workout Records**: Track date, duration, calories, and personal notes  
+- **Analytics Dashboard**: Visualize trends, such as total time, best 5k, longest distance, and calories burned  
+- **Workout Sharing**: Selectively share workout records with other registered users  
+- **Profile Page**: Display user information including username, gender, birthdate  
+- **PDF Export Support** for weight tracking logs  
+- **Mutual Friend System**: Add and remove friends with mutual following (like Strava)  
+- **Private Messaging**: Send and receive private messages between friends  
+- **Friends' Workout Feed (Circle)**: View all workout records from mutual friends, similar to a social feed  
+- **Comments and Likes**: Comment on and like friends' workout records  
+- **Backend Design** using modular Flask Blueprints, SQLAlchemy models, and utility wrappers for security  
+
+The application uses:
+- **Flask** (backend framework)  
+- **Flask-WTF** for form handling & CSRF protection  
+- **Jinja2** templating engine  
+- **SQLAlchemy** ORM  
+- **Chart.js** for analytics visualization  
+- **Bootstrap 5** for UI components  
 
 ---
 
 ## 2. Group Members
 
-| UWA ID     | Name         | GitHub Username |
-|------------|--------------|-----------------|
-| 24235608   | XI Qin       | xiqin2049       |
-| 24368182   | Junyu Zhang  | fish47          |
-| 24094198   | Yifan Lu     | Even593         |
-| 23998001   | Leo Yuan     | *(Not linked)*  |
+| Name         | UWA ID     | GitHub Username                                      |
+|--------------|------------|------------------------------------------------------|
+| Leo Yuan     | 23998001   | [@LeoYuan0225](https://github.com/LeoYuan0225)       |
+| Junyu Zhang  | 24368182   | [@fish47](https://github.com/fish47)                 |
+| Yifan Lu     | 24094198   | [@Even593](https://github.com/Even593)               |
+| XI Qin       | 24235608   | [@xiqin2049](https://github.com/xiqin2049)           |
 
-Repository: [https://github.com/Even593/Web_GroupProject](https://github.com/Even593/Web_GroupProject)
+🔗 GitHub Repository (Private): [https://github.com/Even593/Web_GroupProject](https://github.com/Even593/Web_GroupProject)
 
 ---
 
-## 3. How to Run Locally
+## 3. How to Launch the Application
 
 ### Step 1 – Clone the repository
 
-- Open a terminal
-- Run `git clone https://github.com/Even593/Web_GroupProject.git`
-- Then run `cd Web_GroupProject`
-
----
+```bash
+git clone https://github.com/Even593/Web_GroupProject.git
+cd Web_GroupProject
+```
 
 ### Step 2 – Create and activate a virtual environment
 
-- **macOS/Linux:**
-  - Run `python -m venv .venv`
-  - Run `source .venv/bin/activate`
+**macOS/Linux:**
 
-- **Windows:**
-  - Run `.venv\Scripts\activate`
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
----
+**Windows (CMD):**
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
 
 ### Step 3 – Install dependencies
 
-- Make sure your virtual environment is activated
-- Run `pip install flask flask-sqlalchemy flask-wtf`
-- (Optional) If using a `requirements.txt` file, run `pip install -r requirements.txt`
+Install the required Python packages:
+
+```bash
+pip install flask flask-sqlalchemy flask-wtf
+```
+
+Alternatively, if you have a `requirements.txt` file, run:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Step 4 – Set environment variables and launch the application
+
+**macOS/Linux:**
+
+```bash
+export FLASK_APP=app
+export FLASK_ENV=development
+flask run
+```
+
+**Windows (CMD):**
+
+```bash
+set FLASK_APP=app
+set FLASK_ENV=development
+flask run
+```
+
+Once the server starts, open your browser and go to:
+
+```
+http://127.0.0.1:5000
+```
 
 ---
 
-### Step 4 – Set environment and launch the app
+## 4. How to Run the Tests for the Application
 
-- **macOS/Linux:**
-  - Run `export FLASK_APP=app`
-  - Run `export FLASK_ENV=development`
-  - Run `flask run`
+Currently, **manual testing** is supported. Automated tests can be added in the future.
 
-- **Windows (Command Prompt):**
-  - Run `set FLASK_APP=app`
-  - Run `set FLASK_ENV=development`
-  - Run `flask run`
+### ✅ Manual Testing Workflow
 
-- Open your browser and go to: `http://127.0.0.1:5000`
+1. Register a new user at `/register`  
+2. Log in via `/login`  
+3. Navigate through the following pages and test functionalities:
 
----
+| Page             | URL               | What to Test                                |
+|------------------|-------------------|---------------------------------------------|
+| Workout Logging  | `/workout/`       | Add, delete, and share workout records      |
+| Shared Workouts  | `/workout/shared` | View workouts shared to you                 |
+| Analytics        | `/analytics/`     | View stats: total time, best 5k, etc.       |
+| Profile          | `/profile/`       | View user info (username, gender, birthdate) |
 
-### Tips
+4. Test **CSRF Protection**:
+   - Check the `X-CSRFToken` header in DevTools → Network  
+   - Submit invalid or missing tokens to verify protection
 
-- Ensure all commands are run from the **project root** (`Web_GroupProject/`)
-- If `flask` command is not recognized, make sure your environment is activated
-- Press `Ctrl + C` to stop the development server
-
----
-
+5. Ensure **User Data Isolation**:
+   - A user should only see their own data unless it's shared with them

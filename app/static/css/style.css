@@ -1,31 +1,32 @@
+/* Set global font and background color */
 body {
     font-family: 'Arial', sans-serif;
     background-color: #ffffff;
 }
-
+/* Make all heading tags bold */
 h1, h2, h3, h4, h5 {
     font-weight: bold;
 }
-
+/* Style for footer text */
 footer {
     font-size: 0.9rem;
     color: #2e7d32;
 }
-
+/* Square image with fixed size, rounded corners, and cropped content */
 .img-square {
     width: 150px;
     height: 150px;
     object-fit: cover;
     border-radius: 10px;
 }
-
+/* Card component styling */
 .card {
     border: 2px solid #e0e0e0;
     border-radius: 12px;
     transition: all 0.3s ease;
     background-color: #ffffff;
 }
-
+/* Hover effect for card */
 .card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0,0,0,0.1);

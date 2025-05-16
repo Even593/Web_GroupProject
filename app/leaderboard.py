@@ -2,14 +2,15 @@
 
 import datetime
 import flask
-from . import util, user
+from . import util
 from . import db
 from .workout import WorkoutRecord
 
 bp_view, _ = util.make_module_blueprints("leaderboard")
 
-@user.route_to_login_if_required
+
 @bp_view.get("/", endpoint="")
+@util.route_check_login
 def view_leaderboard():
 
     # Today's date
