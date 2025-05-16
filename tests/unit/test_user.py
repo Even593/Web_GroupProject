@@ -24,7 +24,7 @@ class UserTestCase(unittest.TestCase):
 
     def test_register_and_login_logout(self):
         #  register
-        payload = {"username": "bob", "password": "secret"}
+        payload = {"username": "bob", "password": "secret", "email": "example@gmail.com"}
         rv = self.client.post(
             url_for('api.user._bp_api_register'),
             data=json.dumps(payload),
@@ -36,7 +36,7 @@ class UserTestCase(unittest.TestCase):
         # query table
         u = Account.query.filter_by(name="bob").first()
         self.assertIsNotNone(u)
-        self.assertEqual(u.gender, Gender.MALE)
+        self.assertEqual(u.gender, Gender.UNKNOWN)
 
         # log in
         rv = self.client.post(
