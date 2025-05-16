@@ -11,6 +11,7 @@ def create_app(config_name: str = "development") -> flask.Flask:
         raise ValueError(f"Unknown config name '{config_name}'")
     app.config.from_object(config_class)
     db.db.init_app(app)
+    db.migration.init_app(app, db.db)
 
     from . import account
     from . import weight

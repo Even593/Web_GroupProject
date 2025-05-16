@@ -8,6 +8,7 @@ import typing
 import datetime
 
 import flask
+import flask_migrate
 import flask_sqlalchemy
 
 import sqlalchemy as sa
@@ -19,6 +20,8 @@ class __BaseModel(sa_orm.DeclarativeBase):
 
 # SQLAlchemy instance using our custom base model
 db = flask_sqlalchemy.SQLAlchemy(model_class=__BaseModel)
+
+migration = flask_migrate.Migrate()
 
 # Alias for model base class to support type checking and runtime use
 if typing.TYPE_CHECKING:
