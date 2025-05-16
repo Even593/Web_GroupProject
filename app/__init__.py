@@ -31,7 +31,7 @@ def create_app(config_name: str = "development") -> flask.Flask:
     app.register_blueprint(workout.bp_view)
     api.register_blueprint(analytics.bp_api)
     app.register_blueprint(analytics.bp_view)
-    app.register_blueprint(weightchart.bp_api)
+    api.register_blueprint(weightchart.bp_api)
     app.register_blueprint(weightchart.bp_view)
     app.register_blueprint(leaderboard.bp_view)
     app.register_blueprint(api)
